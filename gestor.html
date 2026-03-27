@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Pedidos</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; padding: 15px; color: #333; }
+        .contenedor { max-width: 600px; margin: 0 auto; }
+        h2 { text-align: center; color: #f57c00; margin-top: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
+        
+        /* Formulario para nuevo pedido */
+        .panel-nuevo { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 4px solid #f57c00;}
+        label { font-weight: bold; font-size: 13px; display: block; margin-top: 10px; color: #555;}
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn-agregar { background-color: #f57c00; color: white; border: none; border-radius: 8px; padding: 12px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; transition: 0.2s;}
+        .btn-agregar:hover { background-color: #e65100; }
+
+        /* Tarjetas de Pedidos */
+        .tarjeta-pedido { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 6px solid #ccc; position: relative;}
+        .cliente-nombre { font-size: 18px; font-weight: bold; margin: 0 0 5px 0; color: #333;}
+        .detalle-pedido { font-size: 14px; margin: 0 0 10px 0; color: #666; }
+        .fecha-entrega { font-size: 12px; background: #eee; padding: 4px 8px; border-radius: 4px; display: inline-block; font-weight: bold;}
+        
+        /* Botones de estado */
+        .controles-estado { display: flex; gap: 5px; margin-top: 15px; flex-wrap: wrap;}
+        .btn-estado { flex: 1; padding: 8px 5px; border: none; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; min-width: 70px;}
+        
+        /* Colores de estados */
+        .estado-pendiente { border-left-color: #ff5252; }
+        .estado-proceso { border-left-color: #2196f3; }
+        .estado-listo { border-left-color: #4caf50; }
+        .estado-entregado { border-left-color: #9e9e9e; opacity: 0.7; }
+
+        .btn-eliminar { position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 16px; cursor: pointer; color: #ff5252;}
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <h2>📅 Mis Pedidos</h2>
+
+        <div class="panel-nuevo">
+            <h3 style="margin-top: 0; color: #333;">➕ Agregar Nuevo Pedido</h3>
+            
+            <label>Nombre del Cliente:</label>
+            <input type="text" id="inputCliente" placeholder="Ej. Ana Pérez">
+            
+            <label>¿Qué pidió? (Producto y detalles):</label>
+            <input type="text" id="inputDetalle" placeholder="Ej. 2 tazas Usagi y 1 figura tricotín">
+            
+            <label>Fecha de Entrega acordada:</label>
+            <input type="date" id="inputFecha">
+            
+            <button class="btn-agregar" onclick="agregarPedido()">Guardar Pedido</button>
+        </div>
+
+        <div id="contenedor-pedidos">
+            </div>
+
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+            <a href="index.html" style="color: #666; text-decoration: none; font-weight: bold; background: white; padding: 10px 20px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">⬅ Volver al Menú Principal</a>
+        </div>
+    </div>
+
+    <script>
+        // Memoria para los pedidos
+        let pedidos = JSON.parse(localStorage.getItem('misPedidosLocales')) || [];
+
+        // Por defecto, poner la fecha de mañana en el calendario
+        let manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        document.getElementById('inputFecha').valueAsDate = manana;
+
+        function agregarPedido() {
+            const cliente = document.getElementById('inputCliente').value;
+            const detalle = document.getElementById('inputDetalle').value;
+            const fecha = document.getElementById('inputFecha').value;
+
+            if(cliente && detalle) {
+                // Nuevo pedido siempre entra como "pendiente"
+                pedidos.unshift({
+                    cliente: cliente,
+                    detalle: detalle,
+                    fecha: fecha,
+                    estado: 'pendiente' // Puede ser: pendiente, proceso, listo, entregado
+                });
+
+                guardarYRenderizar();
+
+                // Limpiar formulario
+                document.getElementById('inputCliente').value = '';
+                document.getElementById('inputDetalle').value = '';
+            } else {
+                alert("Por favor anota al menos el nombre del cliente y qué pidió 🙊");
+            }
+        }
+
+        function cambiarEstado(index, nuevoEstado) {
+            pedidos[index].estado = nuevoEstado;
+            guardarYRenderizar();
+        }
+
+        function eliminarPedido(index) {
+            if(confirm("¿Estás segura de borrar este pedido? 🗑️")) {
+                pedidos.splice(index, 1);
+                guardarYRenderizar();
+            }
+        }
+
+        function guardarYRenderizar() {
+            localStorage.setItem('misPedidosLocales', JSON.stringify(pedidos));
+            renderizarPedidos();
+        }
+
+        function formatearFecha(fechaString) {
+            if(!fechaString) return "Sin fecha";
+            const opciones = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            // Ajuste para evitar desfase de zona horaria
+            let fechaObj = new Date(fechaString + 'T12:00:00');
+            return fechaObj.toLocaleDateString('es-MX', opciones);
+        }
+
+        function renderizarPedidos() {
+            const contenedor = document.getElementById('contenedor-pedidos');
+            contenedor.innerHTML = '';
+
+            if(pedidos.length === 0) {
+                contenedor.innerHTML = '<p style="text-align:center; color:#888;">No tienes pedidos pendientes ahorita. ¡A vender! ✨</p>';
+                return;
+            }
+
+            pedidos.forEach((pedido, index) => {
+                // Asignar la clase CSS dependiendo del estado
+                let claseEstado = '';
+                let textoEstado = '';
+
+                if(pedido.estado === 'pendiente') { claseEstado = 'estado-pendiente'; textoEstado = '⏳ Pendiente'; }
+                else if(pedido.estado === 'proceso') { claseEstado = 'estado-proceso'; textoEstado = '🛠️ Haciendo'; }
+                else if(pedido.estado === 'listo') { claseEstado = 'estado-listo'; textoEstado = '✅ Listo'; }
+                else if(pedido.estado === 'entregado') { claseEstado = 'estado-entregado'; textoEstado = '📦 Entregado'; }
+
+                contenedor.innerHTML += `
+                    <div class="tarjeta-pedido ${claseEstado}">
+                        <button class="btn-eliminar" onclick="eliminarPedido(${index})">✖</button>
+                        <p class="cliente-nombre">${pedido.cliente}</p>
+                        <p class="detalle-pedido">${pedido.detalle}</p>
+                        <span class="fecha-entrega">Entrega: ${formatearFecha(pedido.fecha)}</span>
+                        <span style="font-size: 12px; font-weight: bold; margin-left: 10px; color: #555;">${textoEstado}</span>
+
+                        <div class="controles-estado">
+                            <button class="btn-estado" style="background:#ffcdd2; color:#c62828;" onclick="cambiarEstado(${index}, 'pendiente')">Pendiente</button>
+                            <button class="btn-estado" style="background:#bbdefb; color:#1565c0;" onclick="cambiarEstado(${index}, 'proceso')">En Proceso</button>
+                            <button class="btn-estado" style="background:#c8e6c9; color:#2e7d32;" onclick="cambiarEstado(${index}, 'listo')">¡Listo!</button>
+                            <button class="btn-estado" style="background:#e0e0e0; color:#424242;" onclick="cambiarEstado(${index}, 'entregado')">Entregado</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Cargar al inicio
+        renderizarPedidos();
+    </script>
+</body>
+</html>

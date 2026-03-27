@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Lunavia Pro 🌙</title>
+    <script>
+        function obtenerInsumos() { return JSON.parse(localStorage.getItem('insumos_v3')) || []; }
+
+        function guardarInsumo() {
+            const cat = document.getElementById('catInsumo').value;
+            const nom = document.getElementById('nombreMat').value.trim();
+            const cos = parseFloat(document.getElementById('costoMat').value) || 0;
+            const can = parseFloat(document.getElementById('cantMat').value) || 0;
+            const uni = document.getElementById('unidadMat').value;
+
+            if (nom === "" || can <= 0) { alert("⚠️ Pon nombre y cantidad"); return; }
+
+            let precioU;
+            if(uni === 'kg' || uni === 'L' || uni === 'm') {
+                precioU = cos / (can * (uni === 'm' ? 100 : 1000));
+            } else { precioU = cos / can; }
+
+            const uniUso = (uni === 'kg') ? 'gr' : (uni === 'L') ? 'ml' : (uni === 'm') ? 'cm' : uni;
+            let lista = obtenerInsumos();
+            lista.push({ nombre: cat + " " + nom, unidad: uniUso, precio: precioU });
+            localStorage.setItem('insumos_v3', JSON.stringify(lista));
+
+            document.getElementById('nombreMat').value = "";
+            document.getElementById('costoMat').value = "0";
+            document.getElementById('cantMat').value = "1";
+            alert("✅ Guardado!");
+            dibujarTodo();
+        }
+
+        function dibujarTodo() {
+            const div = document.getElementById('lista-insumos');
+            const sel = document.getElementById('selectInsumo');
+            const lista = obtenerInsumos();
+            div.innerHTML = "";
+            sel.innerHTML = '<option value="">-- Elige Material --</option>';
+            lista.forEach((item, i) => {
+                div.innerHTML += `<div style="background:#fff; padding:5px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd; display:flex; justify-content:space-between; font-size:11px;">
+                    <span>${item.nombre} ($${item.precio.toFixed(3)})</span>
+                    <button onclick="borrar(${i})" style="color:red; border:none; background:none;">X</button>
+                </div>`;
+                let opt = document.createElement("option");
+                opt.value = i; opt.text = item.nombre; sel.add(opt);
+            });
+        }
+
+        function borrar(i) {
+            let lista = obtenerInsumos();
+            lista.splice(i, 1);
+            localStorage.setItem('insumos_v3', JSON.stringify(lista));
+            dibujarTodo();
+        }
+
+        let acumulado = 0;
+        function sumarPieza() {
+            const i = document.getElementById('selectInsumo').value;
+            const cant = parseFloat(document.getElementById('usoCant').value) || 0;
+            const lista = obtenerInsumos();
+            if(i !== "" && cant > 0) {
+                const ins = lista[i];
+                const costoItem = ins.precio * cant;
+                acumulado += costoItem;
+                document.getElementById('resumen').innerHTML += `<div>• ${ins.nombre}: $${costoItem.toFixed(2)}</div>`;
+                calcularVenta();
+                document.getElementById('usoCant').value = 0;
+            }
+        }
+
+        function calcularVenta() {
+            const porc = parseFloat(document.getElementById('porcGanancia').value) || 0;
+            const venta = acumulado + (acumulado * (porc / 100));
+            document.getElementById('totalProduccion').innerText = acumulado.toFixed(2);
+            document.getElementById('totalVenta').innerText = venta.toFixed(2);
+        }
+
+        function guardarParaCotizador() {
+            const nomFinal = document.getElementById('nombreProdFinal').value.trim();
+            const precioV = document.getElementById('totalVenta').innerText;
+            if(!nomFinal) { alert("⚠️ Ponle nombre al producto"); return; }
+            
+            let prods = JSON.parse(localStorage.getItem('productosLunavia')) || [];
+            prods.push({ nombre: nomFinal, costoBase: precioV }); // Guardamos el precio de venta final
+            localStorage.setItem('productosLunavia', JSON.stringify(prods));
+            
+            alert("✨ ¡Guardado para Cotizador!");
+            location.reload(); 
+        }
+
+        window.onload = dibujarTodo;
+    </script>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 10px; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        .box { background: #fdfbff; padding: 10px; border: 1px solid #e1bee7; border-radius: 8px; margin-bottom: 10px; }
+        input, select { width: 100%; padding: 8px; margin: 4px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h3 style="text-align:center; color:#4b0082; margin:0 0 10px 0;">Calculadora de Precios 🌙</h3>
+
+        <div class="box">
+            <strong>1. Registro de Insumos</strong>
+            <div style="display:flex; gap:5px;">
+                <select id="catInsumo" style="width:60px;"><option>🕯️</option><option>🧶</option><option>🪴</option></select>
+                <input type="text" id="nombreMat" placeholder="Nombre material">
+            </div>
+            <div style="display:flex; gap:5px;">
+                <input type="number" id="costoMat" placeholder="Costo $">
+                <input type="number" id="cantMat" placeholder="Cantidad">
+            </div>
+            <select id="unidadMat">
+                <option value="gr">Gramos</option><option value="kg">Kilos</option>
+                <option value="ml">Mililitros</option><option value="L">Litros</option>
+                <option value="cm">Centímetros</option><option value="m">Metros</option>
+                <option value="pz">Piezas</option>
+            </select>
+            <button style="background:#9c27b0;" onclick="guardarInsumo()">💾 Guardar Material</button>
+            <div id="lista-insumos" style="margin-top:8px; max-height:100px; overflow-y:auto;"></div>
+        </div>
+
+        <div class="box">
+            <strong>2. Cálculo de Pieza</strong>
+            <select id="selectInsumo"></select>
+            <input type="number" id="usoCant" placeholder="Cantidad usada">
+            <button style="background:#2196f3;" onclick="sumarPieza()">➕ Sumar</button>
+            <div id="resumen" style="font-size:11px; margin-top:5px; color:#555;"></div>
+        </div>
+
+        <div style="background:#fff9c4; padding:12px; border-radius:10px; border:2px solid #fbc02d;">
+            <div style="font-size:12px;">Costo Producción: $<span id="totalProduccion">0.00</span></div>
+            <label style="font-size:12px;">% Ganancia:</label>
+            <input type="number" id="porcGanancia" value="100" oninput="calcularVenta()" style="height:30px;">
+            <div style="font-size:18px; font-weight:bold; color:#d32f2f;">Precio Sugerido: $<span id="totalVenta">0.00</span></div>
+            
+            <hr style="border:0; border-top:1px solid #fbc02d; margin:10px 0;">
+            <input type="text" id="nombreProdFinal" placeholder="Nombre (ej. Vela Osito)">
+            <button style="background:#ff9800;" onclick="guardarParaCotizador()">✨ Guardar Producto</button>
+        </div>
+
+        <p style="text-align:center;"><a href="index.html" style="text-decoration:none; color:gray; font-size:12px;">⬅ Menú</a></p>
+    </div>
+
+</body>
+</html>

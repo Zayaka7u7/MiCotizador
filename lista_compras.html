@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras Inteligente 🛒</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; color: #333; }
+        .contenedor { max-width: 500px; margin: 0 auto; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #4b0082; margin-top: 0; }
+        
+        .registro { background: #fdfbff; padding: 15px; border-radius: 12px; border: 1px solid #e1bee7; margin-bottom: 15px; }
+        .fila-input { display: flex; gap: 5px; margin-bottom: 8px; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        
+        .btn-add { width: 100%; background: #9c27b0; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-edit-mode { background: #2196f3 !important; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #eee; padding: 5px; border-radius: 10px; }
+        .tab { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #666; background: transparent; }
+        .tab-activa { background: white; color: #4b0082; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 8px; }
+        .check-box { width: 22px; height: 22px; accent-color: #9c27b0; }
+        .tachado { text-decoration: line-through; color: #bbb !important; }
+        
+        .resumen { background: #4b0082; color: white; padding: 15px; border-radius: 15px; text-align: center; margin-top: 15px; }
+        .gran-total { font-size: 26px; font-weight: bold; color: #ffeb3b; display: block; }
+        
+        .acciones { display: flex; gap: 10px; align-items: center; }
+        .btn-accion { border: none; background: none; font-size: 18px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h2 id="titulo-principal">🛒 Presupuesto Pro</h2>
+
+    <div class="registro" id="caja-registro">
+        <strong id="label-modo">1. Agregar o elegir favorito:</strong>
+        <select id="selectFavoritos" onchange="cargarFavorito()" style="margin: 10px 0; border: 2px solid #9c27b0; width: 100%;">
+            <option value="">-- Mis Favoritos --</option>
+        </select>
+
+        <div class="fila-input">
+            <select id="marca" style="width: 40%;">
+                <option value="lunavia">🌙 Lunavia</option>
+                <option value="usagi">🐰 Usagi</option>
+            </select>
+            <input type="text" id="nombre" placeholder="¿Qué comprar?" style="flex: 1;">
+        </div>
+        <div class="fila-input">
+            <input type="number" id="cant" placeholder="Pzs">
+            <input type="number" id="precio" placeholder="Precio $" style="flex: 1;">
+        </div>
+        <button class="btn-add" id="btn-principal" onclick="agregar()">➕ Añadir a la Lista</button>
+        <button class="btn-add" id="btn-cancelar" onclick="cancelarEdicion()" style="display:none; background:#777; margin-top:5px;">Cancelar Edición</button>
+    </div>
+
+    <div class="tabs">
+        <button id="tabL" class="tab tab-activa" onclick="cambiarTab('lunavia')">🌙 Lunavia</button>
+        <button id="tabU" class="tab" onclick="cambiarTab('usagi')">🐰 Usagi</button>
+    </div>
+
+    <div id="lista-articulos"></div>
+
+    <div class="resumen">
+        Total <span id="nombreMarcaTotal">Lunavia</span>:
+        <span class="gran-total" id="totalMonto">$0.00</span>
+    </div>
+
+    <p style="text-align:center; margin-top:15px;">
+        <a href="index.html" style="color:#888; text-decoration:none; font-size:12px; font-weight:bold;">⬅ Menú Principal</a>
+    </p>
+</div>
+
+<script>
+    let miLista = JSON.parse(localStorage.getItem('lista_compras_v3')) || [];
+    let favoritos = JSON.parse(localStorage.getItem('favoritos_compras')) || [];
+    let marcaActual = 'lunavia';
+    let editandoIndex = -1;
+
+    function agregar() {
+        const marca = document.getElementById('marca').value;
+        const nombre = document.getElementById('nombre').value.trim();
+        const cant = parseFloat(document.getElementById('cant').value) || 1;
+        const precio = parseFloat(document.getElementById('precio').value) || 0;
+
+        if(!nombre) return alert("Escribe el nombre");
+
+        if(editandoIndex === -1) {
+            // MODO AGREGAR
+            miLista.push({ marca, nombre, cant, precio, total: (cant * precio), comprado: false });
+            // Guardar en favoritos si es nuevo
+            if(!favoritos.find(f => f.nombre === nombre)) {
+                favoritos.push({ nombre, precio, marca });
+            }
+        } else {
+            // MODO EDITAR
+            miLista[editandoIndex] = { ...miLista[editandoIndex], marca, nombre, cant, precio, total: (cant * precio) };
+            cancelarEdicion();
+        }
+        
+        limpiarForm();
+        actualizarTodo();
+    }
+
+    function editar(i) {
+        editandoIndex = i;
+        const item = miLista[i];
+        document.getElementById('marca').value = item.marca;
+        document.getElementById('nombre').value = item.nombre;
+        document.getElementById('cant').value = item.cant;
+        document.getElementById('precio').value = item.precio;
+        
+        document.getElementById('btn-principal').innerText = "💾 Guardar Cambios";
+        document.getElementById('btn-principal').classList.add('btn-edit-mode');
+        document.getElementById('btn-cancelar').style.display = "block";
+        document.getElementById('label-modo').innerText = "📝 Editando artículo:";
+        window.scrollTo(0,0);
+    }
+
+    function cancelarEdicion() {
+        editandoIndex = -1;
+        limpiarForm();
+        document.getElementById('btn-principal').innerText = "➕ Añadir a la Lista";
+        document.getElementById('btn-principal').classList.remove('btn-edit-mode');
+        document.getElementById('btn-cancelar').style.display = "none";
+        document.getElementById('label-modo').innerText = "1. Agregar o elegir favorito:";
+    }
+
+    function cargarFavorito() {
+        const i = document.getElementById('selectFavoritos').value;
+        if(i !== "") {
+            const fav = favoritos[i];
+            document.getElementById('nombre').value = fav.nombre;
+            document.getElementById('precio').value = fav.precio;
+            document.getElementById('marca').value = fav.marca;
+        }
+    }
+
+    function actualizarTodo() {
+        localStorage.setItem('lista_compras_v3', JSON.stringify(miLista));
+        localStorage.setItem('favoritos_compras', JSON.stringify(favoritos));
+        dibujar();
+        dibujarFavoritos();
+    }
+
+    function dibujarFavoritos() {
+        const sel = document.getElementById('selectFavoritos');
+        sel.innerHTML = '<option value="">-- Mis Favoritos --</option>';
+        favoritos.forEach((f, i) => {
+            sel.innerHTML += `<option value="${i}">${f.nombre} ($${f.precio})</option>`;
+        });
+    }
+
+    function cambiarTab(m) {
+        marcaActual = m;
+        document.getElementById('tabL').className = (m === 'lunavia') ? 'tab tab-activa' : 'tab';
+        document.getElementById('tabU').className = (m === 'usagi') ? 'tab tab-activa' : 'tab';
+        document.getElementById('nombreMarcaTotal').innerText = (m === 'lunavia') ? 'Lunavia' : 'Usagi';
+        dibujar();
+    }
+
+    function toggleCheck(i) {
+        miLista[i].comprado = !miLista[i].comprado;
+        actualizarTodo();
+    }
+
+    function borrar(i) {
+        if(confirm("¿Segura que quieres borrarlo?")) {
+            miLista.splice(i, 1);
+            actualizarTodo();
+        }
+    }
+
+    function limpiarForm() {
+        document.getElementById('nombre').value = "";
+        document.getElementById('cant').value = "";
+        document.getElementById('precio').value = "";
+        document.getElementById('selectFavoritos').value = "";
+    }
+
+    function dibujar() {
+        const contenedor = document.getElementById('lista-articulos');
+        const totalTxt = document.getElementById('totalMonto');
+        contenedor.innerHTML = "";
+        let sumaTotal = 0;
+
+        miLista.forEach((item, index) => {
+            if(item.marca === marcaActual) {
+                sumaTotal += item.total;
+                contenedor.innerHTML += `
+                <div class="item">
+                    <input type="checkbox" class="check-box" ${item.comprado ? 'checked' : ''} onclick="toggleCheck(${index})">
+                    <div style="flex:1; margin-left:10px;" class="${item.comprado ? 'tachado' : ''}">
+                        <span style="font-weight:bold;">${item.cant}x ${item.nombre}</span><br>
+                        <small>$${item.precio} c/u = <strong>$${item.total.toFixed(2)}</strong></small>
+                    </div>
+                    <div class="acciones">
+                        <button class="btn-accion" onclick="editar(${index})">✏️</button>
+                        <button class="btn-accion" onclick="borrar(${index})" style="color:red;">✕</button>
+                    </div>
+                </div>`;
+            }
+        });
+        totalTxt.innerText = "$" + sumaTotal.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    }
+
+    window.onload = () => { dibujar(); dibujarFavoritos(); };
+</script>
+</body>
+</html>

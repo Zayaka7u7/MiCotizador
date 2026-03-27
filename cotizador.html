@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador Multimarca 🌙🐰</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 10px; color: #333; }
+        .contenedor { max-width: 450px; margin: 0 auto; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .seccion { background: #fdfbff; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; }
+        label { font-weight: bold; font-size: 12px; display: block; margin-top: 8px; }
+        input, select { width: 100%; padding: 8px; margin: 4px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 5px; }
+        
+        /* DISEÑO DE LA NOTA */
+        #nota-remision { 
+            width: 320px; min-height: 400px; padding: 25px; border: 1px solid #ddd; 
+            margin: 15px auto; position: relative; overflow: hidden;
+            background-color: white; background-size: cover; background-position: center;
+        }
+        .contenido-nota { position: relative; z-index: 2; background: rgba(255,255,255,0.85); padding: 15px; border-radius: 10px; }
+        .item-nota { display: flex; justify-content: space-between; border-bottom: 1px dashed #999; padding: 5px 0; font-size: 13px; font-family: 'Courier New', monospace; }
+        
+        /* Estilos por marca */
+        .tema-lunavia { border-top: 10px solid #8e44ad !important; }
+        .tema-usagi { border-top: 10px solid #ff85a2 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <h3 style="text-align:center; margin-top:0;">📝 Generador de Notas</h3>
+
+        <div class="seccion">
+            <label>1. Elige la Marca:</label>
+            <select id="marcaSelect" onchange="cambiarMarca()">
+                <option value="lunavia">🌙 Lunavia (Artesanal)</option>
+                <option value="usagi">🐰 Usagi (Personalizados)</option>
+            </select>
+
+            <label>2. Foto de Fondo (Opcional):</label>
+            <input type="file" id="inputFondo" accept="image/*" onchange="cargarFondo(event)">
+            
+            <label>3. Producto Guardado:</label>
+            <select id="selectProducto" onchange="cargarPrecio()">
+                <option value="">-- Elige un producto calculado --</option>
+            </select>
+        </div>
+
+        <div class="seccion">
+            <div style="display:flex; gap:5px;">
+                <div style="flex:2;"><label>Nombre:</label><input type="text" id="manualNombre"></div>
+                <div style="flex:1;"><label>Precio $:</label><input type="number" id="manualPrecio" value="0"></div>
+            </div>
+            <label>Cantidad:</label>
+            <input type="number" id="manualCant" value="1">
+            <button class="btn" style="background:#4caf50;" onclick="agregarFila()">➕ Agregar a la Nota</button>
+        </div>
+
+        <div id="nota-area">
+            <div id="nota-remision" class="tema-lunavia">
+                <div class="contenido-nota">
+                    <center>
+                        <strong id="tituloNota" style="font-size: 20px;">LUNAVIA 🌙</strong><br>
+                        <small id="sloganNota">Detalles hechos con el corazón</small>
+                    </center>
+                    <hr>
+                    <div id="cuerpoNota"></div>
+                    <div style="text-align: right; margin-top: 15px; font-weight: bold; border-top: 2px solid #333; padding-top: 5px;">
+                        TOTAL: $<span id="totalFinal">0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn" style="background:#2980b9;" onclick="descargar()">📸 Descargar Imagen</button>
+        <button class="btn" style="background:#777;" onclick="location.reload()">🗑️ Limpiar Todo</button>
+        
+        <p style="text-align:center;"><a href="index.html" style="color:#888; text-decoration:none; font-size:12px;">⬅ Menú Principal</a></p>
+    </div>
+
+    <script>
+        let productos = JSON.parse(localStorage.getItem('productosLunavia')) || [];
+        let itemsNota = [];
+
+        function cargarProductos() {
+            const sel = document.getElementById('selectProducto');
+            productos.forEach((p, i) => {
+                sel.innerHTML += `<option value="${i}">${p.nombre} ($${p.costoBase})</option>`;
+            });
+        }
+
+        function cargarPrecio() {
+            const i = document.getElementById('selectProducto').value;
+            if(i !== "") {
+                document.getElementById('manualNombre').value = productos[i].nombre;
+                document.getElementById('manualPrecio').value = productos[i].costoBase;
+            }
+        }
+
+        function cambiarMarca() {
+            const marca = document.getElementById('marcaSelect').value;
+            const nota = document.getElementById('nota-remision');
+            const titulo = document.getElementById('tituloNota');
+            const slogan = document.getElementById('sloganNota');
+
+            if(marca === 'lunavia') {
+                nota.className = "tema-lunavia";
+                titulo.innerText = "LUNAVIA 🌙";
+                slogan.innerText = "Detalles hechos con el corazón";
+                nota.style.backgroundImage = "none";
+            } else {
+                nota.className = "tema-usagi";
+                titulo.innerText = "USAGI 🐰";
+                slogan.innerText = "Personalizando tus ideas";
+                nota.style.backgroundImage = "none";
+            }
+        }
+
+        function cargarFondo(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const nota = document.getElementById('nota-remision');
+                nota.style.backgroundImage = `url(${reader.result})`;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function agregarFila() {
+            const nom = document.getElementById('manualNombre').value;
+            const pre = parseFloat(document.getElementById('manualPrecio').value);
+            const can = parseInt(document.getElementById('manualCant').value);
+            
+            if(nom && pre > 0) {
+                itemsNota.push({ nom, can, total: (pre * can) });
+                dibujarNota();
+                document.getElementById('manualNombre').value = "";
+                document.getElementById('manualPrecio').value = "0";
+            }
+        }
+
+        function dibujarNota() {
+            const cuerpo = document.getElementById('cuerpoNota');
+            let total = 0;
+            cuerpo.innerHTML = "";
+            itemsNota.forEach(item => {
+                total += item.total;
+                cuerpo.innerHTML += `
+                    <div class="item-nota">
+                        <span>${item.can}x ${item.nom}</span>
+                        <span>$${item.total.toFixed(2)}</span>
+                    </div>`;
+            });
+            document.getElementById('totalFinal').innerText = total.toFixed(2);
+        }
+
+        function descargar() {
+            html2canvas(document.getElementById('nota-remision')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Nota_Venta.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        cargarProductos();
+    </script>
+</body>
+</html>

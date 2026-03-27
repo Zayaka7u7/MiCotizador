@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Bazar 🎪</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f4f8; padding: 10px; }
+        .card { background: white; padding: 15px; border-radius: 15px; max-width: 500px; margin: auto; }
+        .box { background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+        input { width: 100%; padding: 8px; margin: 4px 0; box-sizing: border-box; }
+        .prod-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 5px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .btn-vender { background: #4caf50; color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; }
+        .resumen-footer { background: #333; color: white; padding: 15px; border-radius: 10px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="text-align:center; color:#2c3e50;">🎪 Control de Bazar</h2>
+        
+        <div class="box" id="form-registro">
+            <strong>🎒 Cargar Inventario</strong>
+            <input type="text" id="bNombre" placeholder="Nombre del producto">
+            <div style="display:flex; gap:5px;">
+                <input type="number" id="bCant" placeholder="Piezas">
+                <input type="number" id="bPrecio" placeholder="Precio $">
+            </div>
+            <button onclick="agregarInventario()" style="width:100%; background:#2196f3; color:white; padding:10px; border:none; border-radius:5px; margin-top:5px;">Añadir al Stock</button>
+        </div>
+
+        <div id="lista-bazar"></div>
+
+        <div class="resumen-footer">
+            <div style="display:flex; justify-content:space-between;">
+                <span>Total en Ventas:</span>
+                <span id="vTotal">$0.00</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size: 12px; color: #aaa;">
+                <span>Valor total mercancía:</span>
+                <span id="valorMercancia">$0.00</span>
+            </div>
+            <button onclick="finalizarDia()" style="width:100%; background:#e74c3c; color:white; border:none; padding:10px; margin-top:10px; border-radius:5px;">🔚 Finalizar Día / Corte</button>
+        </div>
+        <p style="text-align:center;"><a href="index.html" style="color:gray; text-decoration:none; font-size:12px;">⬅ Menú</a></p>
+    </div>
+
+    <script>
+        let inventario = JSON.parse(localStorage.getItem('bazar_stock')) || [];
+        let ventasAcumuladas = parseFloat(localStorage.getItem('bazar_ventas')) || 0;
+
+        function agregarInventario() {
+            const nom = document.getElementById('bNombre').value;
+            const can = parseInt(document.getElementById('bCant').value);
+            const pre = parseFloat(document.getElementById('bPrecio').value);
+            if(nom && can > 0) {
+                inventario.push({ nom, can, pre, inicial: can });
+                actualizar();
+                document.getElementById('bNombre').value = "";
+                document.getElementById('bCant').value = "";
+                document.getElementById('bPrecio').value = "";
+            }
+        }
+
+        function vender(i) {
+            if(inventario[i].can > 0) {
+                inventario[i].can--;
+                ventasAcumuladas += inventario[i].pre;
+                actualizar();
+            } else {
+                alert("¡Ya no te quedan piezas!");
+            }
+        }
+
+        function actualizar() {
+            localStorage.setItem('bazar_stock', JSON.stringify(inventario));
+            localStorage.setItem('bazar_ventas', ventasAcumuladas);
+            
+            const div = document.getElementById('lista-bazar');
+            div.innerHTML = "";
+            let valorTotal = 0;
+
+            inventario.forEach((item, i) => {
+                valorTotal += (item.can * item.pre);
+                div.innerHTML += `
+                <div class="prod-row">
+                    <div style="font-size:13px;"><strong>${item.nom}</strong><br>$${item.pre}</div>
+                    <div style="text-align:center;">Quedan:<br><strong>${item.can}</strong></div>
+                    <button class="btn-vender" onclick="vender(${i})">🛍️</button>
+                    <button onclick="borrarProd(${i})" style="border:none; background:none; color:#ccc;">✕</button>
+                </div>`;
+            });
+
+            document.getElementById('vTotal').innerText = "$" + ventasAcumuladas.toFixed(2);
+            document.getElementById('valorMercancia').innerText = "$" + valorTotal.toFixed(2);
+        }
+
+        function borrarProd(i) {
+            if(confirm("¿Quitar de la lista?")) {
+                inventario.splice(i, 1);
+                actualizar();
+            }
+        }
+
+        function finalizarDia() {
+            alert("Resumen del día:\nTotal Vendido: $" + ventasAcumuladas.toFixed(2) + "\nRevisa tu stock restante en la lista.");
+            if(confirm("¿Quieres limpiar todo para un nuevo bazar?")) {
+                localStorage.removeItem('bazar_stock');
+                localStorage.removeItem('bazar_ventas');
+                location.reload();
+            }
+        }
+
+        window.onload = actualizar;
+    </script>
+</body>
+</html>

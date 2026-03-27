@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Posts Pro 2.0</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; padding: 15px; color: #333; }
+        .contenedor { max-width: 550px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #007bff; margin-top: 0; }
+        .seccion { background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; }
+        label { font-weight: bold; font-size: 13px; display: block; margin-top: 10px; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px;}
+        .btn { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 15px; font-size: 16px; transition: 0.3s; }
+        .btn-generar { background: linear-gradient(135deg, #007bff, #0056b3); }
+        .btn-copiar { background-color: #28a745; margin-top: 10px; }
+        .resultado-box { 
+            background-color: #fff; border: 2px solid #e0e0e0; padding: 18px; border-radius: 10px; 
+            margin-top: 20px; white-space: pre-wrap; font-size: 14px; line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <h2>✍️ Generador de Posts Pro</h2>
+
+        <div class="seccion">
+            <label>¿Para qué página es?</label>
+            <select id="marcaPost">
+                <option value="Lunavia">Lunavia 🌙 (Tricotín / Velas / Recuerdos)</option>
+                <option value="Usagi">Usagi 🐰 (Tazas / Playeras / Sudaderas)</option>
+                <option value="Zombie">Zombie Unicorn 🦄🧟 (Anime / Streetwear)</option>
+            </select>
+
+            <label>Nombre del Producto / Personaje:</label>
+            <input type="text" id="productoPost" placeholder="Ej. Llavero Tricotín Oso / Taza Personalizada">
+
+            <label>Características (Separa con comas):</label>
+            <textarea id="detallesPost" rows="4" placeholder="Ej. Tejido a mano, algodón de alta calidad, ideal para recuerdo de baby shower"></textarea>
+            
+            <button class="btn btn-generar" onclick="generarPost()">🚀 Generar Publicación Épica</button>
+        </div>
+
+        <div id="seccionResultado" style="display:none;">
+            <label>Tu post está listo:</label>
+            <div id="resultadoPost" class="resultado-box"></div>
+            <button class="btn btn-copiar" onclick="copiarTexto()">📋 Copiar Texto Listo</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html" style="color: #666; text-decoration: none; font-weight: bold;">⬅ Menú Principal</a>
+        </div>
+    </div>
+
+    <script>
+        function generarPost() {
+            const marca = document.getElementById('marcaPost').value;
+            const producto = document.getElementById('productoPost').value;
+            const detallesRaw = document.getElementById('detallesPost').value;
+
+            if(!producto || !detallesRaw) { alert("¡Necesito detalles para que el post brille! 🙊"); return; }
+
+            const listaDetalles = detallesRaw.split(/[,.\n]/).filter(d => d.trim() !== "").map(d => `- ${d.trim()}`).join('\n');
+
+            let texto = "";
+            
+            if(marca === "Lunavia") {
+                texto = `🌙✨ ¡La magia de Lunavia trae algo especial para ti! ✨🌙\n\nEl detalle perfecto para tus momentos inolvidables: **${producto}**.\n\n💖 ¿Qué lo hace único?\n\n${listaDetalles}\n\n✨ Nuestras piezas de tricotín y velas están hechas a mano con el corazón, ideales para decorar o regalar un recuerdo inolvidable.\n\n📩 ¡Pide el tuyo por DM! Hacemos pedidos personalizados para eventos.\n\n#Lunavia #Tricotín #VelasArtesanales #RecuerdosPersonalizados #HechoAMano #Decoracion`;
+            } else if(marca === "Usagi") {
+                texto = `🐰✨ ¡Lleva tu estilo al siguiente nivel con Usagi! ✨🐰\n\nPersonalización sin límites: **${producto}**.\n\n🔥 Detalles de calidad:\n\n${listaDetalles}\n\n✨ En Usagi transformamos tus ideas en playeras, tazas y sudaderas increíbles. ¡Calidad garantizada en cada impresión!\n\n📩 ¡Mándanos tu diseño por mensaje directo!\n\n#Usagi #Sublimacion #PlayerasPersonalizadas #TazasMágicas #RegalosUnicos #Ecatepec`;
+            } else {
+                texto = `🦄🧠 ¡Zombie Unicorn trae a ${producto} con todo su poder! ✨👕\n\nUn diseño que mezcla humor ligero y fandom épico en una sola pieza.\n\n🔥 ¿Qué la hace especial?\n\n${listaDetalles}\n\n✨ Es más que una prenda: es un statement para los fans que saben lo que quieren.\n\n📲 Ya disponible en TikTok Shop — Zombie Unicorn\n\n¡Corre por la tuya antes de que se agoten!\n\n#ZombieUnicorn #Anime #TikTokShopMéxico #Streetwear #DiseñoOriginal`;
+            }
+
+            document.getElementById('resultadoPost').innerText = texto;
+            document.getElementById('seccionResultado').style.display = 'block';
+        }
+
+        function copiarTexto() {
+            const texto = document.getElementById('resultadoPost').innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert("¡Texto copiado! ¡A publicar! 🙊✨");
+            });
+        }
+    </script>
+</body>
+</html>
