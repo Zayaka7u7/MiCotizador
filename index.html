@@ -8,67 +8,90 @@
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
-            margin: 0; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh;
+            margin: 0; padding: 15px; display: flex; align-items: center; justify-content: center; min-height: 100vh;
         }
         .contenedor { 
-            max-width: 400px; width: 100%; background: white; padding: 30px; border-radius: 25px; 
+            max-width: 450px; width: 100%; background: white; padding: 25px; border-radius: 25px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center;
         }
-        h1 { color: #4b0082; margin-bottom: 5px; font-size: 28px; }
-        .subtitulo { color: #666; font-size: 14px; margin-bottom: 25px; }
+        h1 { color: #4b0082; margin: 0; font-size: 26px; }
+        .subtitulo { color: #666; font-size: 13px; margin-bottom: 20px; }
         
-        .grid-botones { display: flex; flex-direction: column; gap: 12px; }
+        .grid-botones { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+        }
         
         .btn { 
-            padding: 16px; border: none; border-radius: 15px; font-weight: bold; font-size: 16px; 
-            color: white; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-decoration: none;
+            padding: 15px 10px; border: none; border-radius: 15px; font-weight: bold; font-size: 14px; 
+            color: white; cursor: pointer; transition: transform 0.2s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-decoration: none;
         }
-        .btn:active { transform: scale(0.98); }
+        .btn:active { transform: scale(0.95); }
+        .btn-largo { grid-column: span 2; flex-direction: row; font-size: 16px; }
 
-        /* Colores Llamativos */
-        .btn-calc { background: linear-gradient(to right, #9c27b0, #673ab7); } /* Morado */
-        .btn-pos { background: linear-gradient(to right, #4caf50, #2e7d32); }  /* Verde */
-        .btn-cot { background: linear-gradient(to right, #2196f3, #1976d2); }  /* Azul */
-        .btn-compras { background: linear-gradient(to right, #ff9800, #f57c00); } /* Naranja */
-        .btn-bazar { background: linear-gradient(to right, #e91e63, #ad1457); } /* Rosa Fuerte */
-        
-        .emoji { font-size: 20px; }
+        /* Colores por Categoría */
+        .c-costos { background: linear-gradient(45deg, #9c27b0, #673ab7); } /* Morados */
+        .c-ventas { background: linear-gradient(45deg, #4caf50, #2e7d32); } /* Verdes */
+        .c-admin { background: linear-gradient(45deg, #2196f3, #1976d2); }  /* Azules */
+        .c-creat { background: linear-gradient(45deg, #ff9800, #f57c00); }  /* Naranjas */
+        .c-extra { background: linear-gradient(45deg, #e91e63, #ad1457); }  /* Rosas */
+
+        .emoji { font-size: 24px; }
+        h4 { grid-column: span 2; margin: 15px 0 5px 0; text-align: left; color: #4b0082; font-size: 14px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
     <div class="contenedor">
-        <div style="font-size: 50px; margin-bottom: 10px;">✨</div>
+        <div style="font-size: 40px;">✨</div>
         <h1>Lunavia & Usagi</h1>
-        <p class="subtitulo">Gestión de Negocios y Creatividad</p>
+        <p class="subtitulo">Gestión Integral de Negocios</p>
 
         <div class="grid-botones">
-            <button class="btn btn-calc" onclick="location.href='calculadora.html'">
-                <span class="emoji">🧮</span> Calculadora de Costos
-            </button>
             
-            <button class="btn btn-pos" onclick="location.href='punto_venta.html'">
-                <span class="emoji">🛍️</span> Punto de Venta
-            </button>
-            
-            <button class="btn btn-cot" onclick="location.href='cotizador.html'">
+            <h4>💰 Finanzas y Costos</h4>
+            <a href="calculadora.html" class="btn c-costos">
+                <span class="emoji">🧮</span> Calculadora
+            </a>
+            <a href="cotizador.html" class="btn c-costos">
                 <span class="emoji">📝</span> Cotizador
-            </button>
-            
-            <button class="btn btn-compras" onclick="location.href='lista_compras.html'">
-                <span class="emoji">🛒</span> Lista de Compras
-            </button>
+            </a>
 
-            <button class="btn btn-bazar" onclick="location.href='bazar.html'">
-                <span class="emoji">🎪</span> Control de Bazar
-            </button>
+            <h4>🛍️ Ventas y Stock</h4>
+            <a href="pdv.html" class="btn c-ventas">
+                <span class="emoji">🏪</span> Punto de Venta
+            </a>
+            <a href="bazar.html" class="btn c-ventas">
+                <span class="emoji">🎪</span> Bazar/Expos
+            </a>
+
+            <h4>📋 Organización</h4>
+            <a href="lista_compras.html" class="btn c-admin">
+                <span class="emoji">🛒</span> Compras
+            </a>
+            <a href="gestor.html" class="btn c-admin">
+                <span class="emoji">📂</span> Gestor
+            </a>
+
+            <h4>🎨 Creatividad y Producción</h4>
+            <a href="recetario.html" class="btn c-creat">
+                <span class="emoji">📖</span> Recetario
+            </a>
+            <a href="copys.html" class="btn c-creat">
+                <span class="emoji">✍️</span> Copys/Redes
+            </a>
+
+            <h4>🔄 Otros</h4>
+            <a href="index.html" class="btn c-extra btn-largo">
+                <span class="emoji">🏠</span> Refrescar Inicio
+            </a>
         </div>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #999; letter-spacing: 1px;">
-            SISTEMA DE GESTIÓN PERSONALIZADO 🌙🐰
+        <p style="margin-top: 25px; font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;">
+            SISTEMA UNIFICADO 🌙🐰 2026
         </p>
     </div>
 
