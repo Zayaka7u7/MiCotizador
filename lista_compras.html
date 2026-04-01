@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Compras Inteligente 🛒</title>
+    <title>Lista de Compras Pro 🛒</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; color: #333; }
         .contenedor { max-width: 500px; margin: 0 auto; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -13,8 +13,8 @@
         .fila-input { display: flex; gap: 5px; margin-bottom: 8px; }
         input, select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
         
-        .btn-add { width: 100%; background: #9c27b0; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-edit-mode { background: #2196f3 !important; }
+        .btn-add { width: 100%; background: #9c27b0; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-pos { background: #607d8b !important; margin-bottom: 10px; font-size: 12px; }
 
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #eee; padding: 5px; border-radius: 10px; }
         .tab { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #666; background: transparent; }
@@ -26,18 +26,21 @@
         
         .resumen { background: #4b0082; color: white; padding: 15px; border-radius: 15px; text-align: center; margin-top: 15px; }
         .gran-total { font-size: 26px; font-weight: bold; color: #ffeb3b; display: block; }
-        
-        .acciones { display: flex; gap: 10px; align-items: center; }
         .btn-accion { border: none; background: none; font-size: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="contenedor">
-    <h2 id="titulo-principal">🛒 Presupuesto Pro</h2>
+    <h2>🛒 Mi Lista de Compras</h2>
 
-    <div class="registro" id="caja-registro">
-        <strong id="label-modo">1. Agregar o elegir favorito:</strong>
+    <div class="registro">
+        <strong>1. Cargar desde Punto de Venta:</strong>
+        <button class="btn-add btn-pos" onclick="cargarDesdePOS()">📦 Sincronizar productos Usagi/Lunavia</button>
+        
+        <hr style="border:0; border-top:1px solid #eee; margin: 10px 0;">
+        
+        <strong id="label-modo">2. Agregar o elegir favorito:</strong>
         <select id="selectFavoritos" onchange="cargarFavorito()" style="margin: 10px 0; border: 2px solid #9c27b0; width: 100%;">
             <option value="">-- Mis Favoritos --</option>
         </select>
@@ -50,11 +53,11 @@
             <input type="text" id="nombre" placeholder="¿Qué comprar?" style="flex: 1;">
         </div>
         <div class="fila-input">
-            <input type="number" id="cant" placeholder="Pzs">
+            <input type="number" id="cant" placeholder="Cant.">
             <input type="number" id="precio" placeholder="Precio $" style="flex: 1;">
         </div>
         <button class="btn-add" id="btn-principal" onclick="agregar()">➕ Añadir a la Lista</button>
-        <button class="btn-add" id="btn-cancelar" onclick="cancelarEdicion()" style="display:none; background:#777; margin-top:5px;">Cancelar Edición</button>
+        <button class="btn-add" id="btn-cancelar" onclick="cancelarEdicion()" style="display:none; background:#777;">Cancelar</button>
     </div>
 
     <div class="tabs">
@@ -80,6 +83,22 @@
     let marcaActual = 'lunavia';
     let editandoIndex = -1;
 
+    // --- NUEVA FUNCIÓN: CARGAR DESDE POS ---
+    function cargarDesdePOS() {
+        let prodsPOS = JSON.parse(localStorage.getItem('productos_pos')) || [];
+        if(prodsPOS.length === 0) return alert("No hay productos en el Punto de Venta.");
+
+        prodsPOS.forEach(p => {
+            // Si el producto no está en favoritos, lo agregamos
+            if(!favoritos.find(f => f.nombre === p.nombre)) {
+                let marcaAuto = p.categoria.includes("Usagi") ? "usagi" : "lunavia";
+                favoritos.push({ nombre: p.nombre, precio: p.precio, marca: marcaAuto });
+            }
+        });
+        actualizarTodo();
+        alert("✅ Productos del Punto de Venta agregados a tus Favoritos.");
+    }
+
     function agregar() {
         const marca = document.getElementById('marca').value;
         const nombre = document.getElementById('nombre').value.trim();
@@ -89,44 +108,17 @@
         if(!nombre) return alert("Escribe el nombre");
 
         if(editandoIndex === -1) {
-            // MODO AGREGAR
             miLista.push({ marca, nombre, cant, precio, total: (cant * precio), comprado: false });
-            // Guardar en favoritos si es nuevo
             if(!favoritos.find(f => f.nombre === nombre)) {
                 favoritos.push({ nombre, precio, marca });
             }
         } else {
-            // MODO EDITAR
             miLista[editandoIndex] = { ...miLista[editandoIndex], marca, nombre, cant, precio, total: (cant * precio) };
             cancelarEdicion();
         }
         
         limpiarForm();
         actualizarTodo();
-    }
-
-    function editar(i) {
-        editandoIndex = i;
-        const item = miLista[i];
-        document.getElementById('marca').value = item.marca;
-        document.getElementById('nombre').value = item.nombre;
-        document.getElementById('cant').value = item.cant;
-        document.getElementById('precio').value = item.precio;
-        
-        document.getElementById('btn-principal').innerText = "💾 Guardar Cambios";
-        document.getElementById('btn-principal').classList.add('btn-edit-mode');
-        document.getElementById('btn-cancelar').style.display = "block";
-        document.getElementById('label-modo').innerText = "📝 Editando artículo:";
-        window.scrollTo(0,0);
-    }
-
-    function cancelarEdicion() {
-        editandoIndex = -1;
-        limpiarForm();
-        document.getElementById('btn-principal').innerText = "➕ Añadir a la Lista";
-        document.getElementById('btn-principal').classList.remove('btn-edit-mode');
-        document.getElementById('btn-cancelar').style.display = "none";
-        document.getElementById('label-modo').innerText = "1. Agregar o elegir favorito:";
     }
 
     function cargarFavorito() {
@@ -154,6 +146,25 @@
         });
     }
 
+    function editar(i) {
+        editandoIndex = i;
+        const item = miLista[i];
+        document.getElementById('marca').value = item.marca;
+        document.getElementById('nombre').value = item.nombre;
+        document.getElementById('cant').value = item.cant;
+        document.getElementById('precio').value = item.precio;
+        document.getElementById('btn-principal').innerText = "💾 Guardar Cambios";
+        document.getElementById('btn-cancelar').style.display = "block";
+        window.scrollTo(0,0);
+    }
+
+    function cancelarEdicion() {
+        editandoIndex = -1;
+        limpiarForm();
+        document.getElementById('btn-principal').innerText = "➕ Añadir a la Lista";
+        document.getElementById('btn-cancelar').style.display = "none";
+    }
+
     function cambiarTab(m) {
         marcaActual = m;
         document.getElementById('tabL').className = (m === 'lunavia') ? 'tab tab-activa' : 'tab';
@@ -168,7 +179,7 @@
     }
 
     function borrar(i) {
-        if(confirm("¿Segura que quieres borrarlo?")) {
+        if(confirm("¿Borrar artículo?")) {
             miLista.splice(i, 1);
             actualizarTodo();
         }
@@ -197,7 +208,7 @@
                         <span style="font-weight:bold;">${item.cant}x ${item.nombre}</span><br>
                         <small>$${item.precio} c/u = <strong>$${item.total.toFixed(2)}</strong></small>
                     </div>
-                    <div class="acciones">
+                    <div style="display:flex; gap:10px;">
                         <button class="btn-accion" onclick="editar(${index})">✏️</button>
                         <button class="btn-accion" onclick="borrar(${index})" style="color:red;">✕</button>
                     </div>
