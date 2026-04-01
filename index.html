@@ -3,96 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú - Lunavia & Usagi</title>
+    <title>Panel de Control Lunavia & Usagi 🌙🐰</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            color: #333;
+        :root {
+            --lila: #9c27b0;
+            --rosa: #ff85a2;
+            --azul: #2196f3;
+            --verde: #4caf50;
+            --gris: #607d8b;
         }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            margin: 0; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh;
+        }
+        .contenedor { 
+            max-width: 400px; width: 100%; background: white; padding: 30px; border-radius: 25px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center;
+        }
+        h1 { color: #4b0082; margin-bottom: 5px; font-size: 28px; }
+        .subtitulo { color: #666; font-size: 14px; margin-bottom: 25px; }
+        
+        .grid-botones { display: flex; flex-direction: column; gap: 12px; }
+        
+        .btn { 
+            padding: 16px; border: none; border-radius: 15px; font-weight: bold; font-size: 16px; 
+            color: white; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:active { transform: scale(0.98); }
 
-        h1 {
-            color: #5d5c61;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            text-align: center;
-        }
-
-        .menu-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            width: 90%;
-            max-width: 800px;
-            padding: 20px;
-        }
-
-        .btn {
-            background-color: #ffffff;
-            color: #5d5c61;
-            text-decoration: none;
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid transparent;
-        }
-
-        .btn:hover {
-            background-color: #e2e2e7;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            border-color: #a3a2a8;
-        }
-
-        /* Color especial para Punto de Venta 💰 */
-        .btn-pdv {
-            background-color: #d4edda;
-            color: #155724;
-            border-color: #c3e6cb;
-        }
-        .btn-pdv:hover {
-            background-color: #c3e6cb;
-            border-color: #bee5eb;
-        }
-
-        .footer {
-            margin-top: 40px;
-            font-size: 0.9rem;
-            color: #888;
-            text-align: center;
-        }
+        .btn-calc { background: linear-gradient(to right, #9c27b0, #673ab7); }
+        .btn-pos { background: linear-gradient(to right, #4caf50, #2e7d32); }
+        .btn-cot { background: linear-gradient(to right, #2196f3, #1976d2); }
+        .btn-compras { background: linear-gradient(to right, #ff9800, #f57c00); }
+        
+        .logo-container { margin-bottom: 20px; font-size: 50px; }
     </style>
 </head>
 <body>
 
-    <h1>¡Hola! ✨<br>¿Qué haremos hoy?</h1>
+    <div class="contenedor">
+        <div class="logo-container">✨</div>
+        <h1>Lunavia & Usagi</h1>
+        <p class="subtitulo">Gestión de Negocios y Creatividad</p>
 
-    <div class="menu-container">
-        <a href="calculadora.html" class="btn">🧮 Calculadora de Costos</a>
-        <a href="cotizador.html" class="btn">📜 Cotizador de Velas</a>
-        <a href="pdv.html" class="btn btn-pdv">💰 Punto de Venta</a>
-        <a href="recetario.html" class="btn">🕯️ Recetario Lunavia</a>
-        <a href="lista_compras.html" class="btn">🛒 Lista de Compras</a>
-        <a href="gestor.html" class="btn">📊 Gestor de Inventario</a>
-        <a href="copys.html" class="btn">✍️ Generador de Copys</a>
-        <a href="bazar.html" class="btn">🎪 Control de Bazares</a>
-    </div>
+        <div class="grid-botones">
+            <button class="btn btn-calc" onclick="location.href='calculadora.html'">
+                🧮 Calculadora de Costos
+            </button>
+            
+            <button class="btn btn-pos" onclick="location.href='punto_venta.html'">
+                🛍️ Punto de Venta & Moldes
+            </button>
+            
+            <button class="btn btn-cot" onclick="location.href='cotizador.html'">
+                📝 Cotizador
+            </button>
+            
+            <button class="btn btn-compras" onclick="location.href='lista_compras.html'">
+                🛒 Lista de Compras
+            </button>
+        </div>
 
-    <div class="footer">
-        🐰 Usagi | 🌙 Lunavia | 🦄 Zombie Unicorn
+        <p style="margin-top: 30px; font-size: 12px; color: #aaa;">Hecho con el corazón 🌙🐰</p>
     </div>
 
 </body>
