@@ -165,6 +165,56 @@
         }
 
         cargarProductos();
+
+        let productosCalc = JSON.parse(localStorage.getItem('productosLunavia')) || [];
+        let productosPOS = JSON.parse(localStorage.getItem('productos_pos')) || [];
+        let articulosNota = [];
+
+        function llenarSelect() {
+            const select = document.getElementById('selectProducto');
+            select.innerHTML = '<option value="">-- Elige un producto --</option>';
+            
+            if(productosCalc.length > 0) {
+                select.innerHTML += '<optgroup label="🧪 De Calculadora (Lunavia)">';
+                productosCalc.forEach((prod, index) => {
+                    select.innerHTML += `<option value="calc-${index}">${prod.nombre} ($${prod.costoBase})</option>`;
+                });
+                select.innerHTML += '</optgroup>';
+            }
+
+            if(productosPOS.length > 0) {
+                select.innerHTML += '<optgroup label="🛍️ Del Punto de Venta">';
+                productosPOS.forEach((prod, index) => {
+                    let precio = prod.precio || 0;
+                    select.innerHTML += `<option value="pos-${index}">${prod.nombre} ($${precio})</option>`;
+                });
+                select.innerHTML += '</optgroup>';
+            }
+        }
+
+        function cargarPrecio() {
+            const valor = document.getElementById('selectProducto').value;
+            if(valor === "") return;
+
+            const partes = valor.split('-');
+            const tipo = partes[0]; 
+            const index = partes[1]; 
+
+            let p;
+            if(tipo === 'calc') {
+                p = productosCalc[index];
+            } else {
+                p = productosPOS[index];
+            }
+
+            document.getElementById('manualNombre').value = p.nombre;
+            document.getElementById('manualPrecio').value = p.costoBase || p.precio || 0;
+        }
+
+      
+        window.onload = function() {
+            llenarSelect();
+        }
     </script>
 </body>
 </html>
