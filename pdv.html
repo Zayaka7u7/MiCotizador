@@ -3,227 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDV Lunavia Master 🌙</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>POS Lunavia & Usagi 🌙🐰</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f0fb; padding: 15px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex: 1; min-width: 350px; max-width: 550px; }
-        h2 { color: #8e44ad; text-align: center; margin-top: 0; }
-        label { font-weight: bold; font-size: 12px; display: block; margin-top: 10px; }
-        input, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-        .btn-add { background: #9b59b6; width: 100%; margin-top: 10px; }
-        .btn-sell { background: #27ae60; width: 100%; font-size: 16px; margin-top: 10px; }
-        .btn-download { background: #2980b9; width: 100%; margin-top: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 10px; color: #333; }
+        .contenedor { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #4b0082; margin-top: 0; }
+        .seccion { background: #fdfbff; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; }
+        label { font-weight: bold; font-size: 12px; display: block; margin-top: 8px; }
+        input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 10px; }
+        .btn-add { background-color: #9c27b0; }
         
-        /* Categorías */
-        .cat-bar { display: flex; gap: 5px; margin: 10px 0; overflow-x: auto; padding-bottom: 5px; }
-        .btn-cat { background: #e1bee7; color: #4a148c; font-size: 11px; padding: 5px 10px; border-radius: 20px; white-space: nowrap; border: none; cursor: pointer; }
-        .btn-cat.active { background: #8e44ad; color: white; }
-
-        /* Tabla e Inventario */
-        .tabla-scroll { max-height: 200px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; }
-        .tabla-inv { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .tabla-inv td { border-bottom: 1px solid #eee; padding: 8px; }
-        .low-stock { background-color: #ffebee; color: #c62828; font-weight: bold; }
-
-        /* Nota de venta */
-        #nota-final { width: 280px; padding: 25px; background: white; border: 1px solid #ddd; margin: 10px auto; color: #333; font-family: 'Courier New', Courier, monospace; }
-        .item-venta { display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 5px 0; font-size: 13px; }
+        /* Estilo especial para Moldes */
+        #campo-molde { background: #e8f5e9; padding: 10px; border-radius: 8px; border: 1px dashed #4caf50; margin-top: 10px; display: none; }
         
-        /* Cierre de Caja */
-        #cierre-box { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; box-shadow: 0 0 50px rgba(0,0,0,0.5); z-index: 100; text-align: center; border: 3px solid #8e44ad; }
+        .item-prod { background: white; padding: 12px; border-radius: 10px; margin-top: 10px; border-left: 5px solid #9c27b0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .tag-id { background: #4caf50; color: white; padding: 2px 6px; border-radius: 5px; font-size: 10px; font-weight: bold; }
+        .btn-vender { background: #4caf50; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="panel">
-        <h2>🌙 Inventario</h2>
-        <div style="background: #f3e5f5; padding: 12px; border-radius: 10px;">
+    <div class="contenedor">
+        <h2>🛍️ Punto de Venta</h2>
+
+        <div class="seccion">
+            <h3>📦 Registrar Producto</h3>
             <label>Categoría:</label>
-            <select id="invCat">
-                <option value="🧶 Tricotín">🧶 Tricotín</option>
-                <option value="🕯️ Velas/Wax">🕯️ Velas/Wax</option>
-                <option value="🪴 Yeso/Resina">🪴 Yeso/Resina</option>
-                <option value="✨ Varios">✨ Varios</option>
+            <select id="pCat" onchange="mostrarIdMolde()">
+                <option value="🌙 Lunavia">🌙 Lunavia</option>
+                <option value="🐰 Usagi">🐰 Usagi</option>
+                <option value="🪴 Moldes">🪴 Moldes</option>
             </select>
+
+            <div id="campo-molde">
+                <label>🆔 ID del Molde (Compra):</label>
+                <input type="text" id="pID" placeholder="Ej. M-001 / Ali-2026">
+            </div>
+
             <label>Nombre del Producto:</label>
-            <input type="text" id="invID" placeholder="Ej: Llavero de Osito">
+            <input type="text" id="pNombre" placeholder="Ej. Maceta Burbuja">
+            
             <div style="display: flex; gap: 10px;">
-                <div style="flex:1;"><label>Costo $:</label><input type="number" id="invCosto" value="0"></div>
-                <div style="flex:1;"><label>% Ganancia:</label><input type="number" id="invGanancia" value="100"></div>
+                <div style="flex:1;"><label>Precio $:</label><input type="number" id="pPrecio" value="0"></div>
+                <div style="flex:1;"><label>Stock:</label><input type="number" id="pStock" value="1"></div>
             </div>
-            <label>Stock Inicial:</label>
-            <input type="number" id="invStock" value="5">
-            <button class="btn btn-add" onclick="guardarInventario()">📦 Guardar</button>
+
+            <button class="btn btn-add" onclick="registrar()">💾 Guardar en Inventario</button>
         </div>
 
-        <h3>📦 Mis Existencias</h3>
-        <div class="cat-bar" id="filtroCategorias">
-            <button class="btn-cat active" onclick="filtrar('TODOS', this)">TODOS</button>
-            <button class="btn-cat" onclick="filtrar('🧶 Tricotín', this)">🧶 Tricotín</button>
-            <button class="btn-cat" onclick="filtrar('🕯️ Velas/Wax', this)">🕯️ Velas</button>
-            <button class="btn-cat" onclick="filtrar('🪴 Yeso/Resina', this)">🪴 Yeso</button>
-        </div>
-        <div class="tabla-scroll">
-            <table class="tabla-inv" id="tablaExistencias">
-                <tbody></tbody>
-            </table>
-        </div>
-        <button class="btn" style="background:#444; width:100%; margin-top:10px;" onclick="verCierre()">📊 Ver Cierre del Día</button>
-    </div>
-
-    <div class="panel">
-        <h2>🛒 Caja</h2>
-        <label>Producto:</label>
-        <select id="selectVenta" onchange="verificarAlerta()"></select>
-        <div id="alertaStock" style="display:none; color:red; font-weight:bold; font-size:11px; text-align:center;">⚠️ ¡STOCK BAJO!</div>
-        
-        <div style="display: flex; gap: 10px;">
-            <div style="flex:1;"><label>Cant:</label><input type="number" id="cantVenta" value="1"></div>
-            <div style="flex:1;"><label>Desc $:</label><input type="number" id="descVenta" value="0" onkeyup="renderizarNota()"></div>
-        </div>
-        <button class="btn btn-sell" onclick="agregarAVenta()">➕ Añadir</button>
-
-        <div id="nota-area">
-            <div id="nota-final">
-                <center><strong>LUNAVIA 🌙</strong><br><small id="fechaNota"></small></center>
-                <hr style="border:1px dashed #333;">
-                <div id="listaItemsNota"></div>
-                <div style="text-align: right; margin-top: 10px;">
-                    <div>Subtotal: $<span id="subTotalNota">0.00</span></div>
-                    <div>Descuento: -$<span id="descTotalNota">0.00</span></div>
-                    <div style="font-weight:bold; font-size:16px;">TOTAL: $<span id="granTotalNota">0.00</span></div>
-                </div>
+        <div id="inventario-lista">
             </div>
-        </div>
-        <button class="btn btn-download" onclick="descargarNota()">📸 Descargar Nota</button>
-        <button class="btn" style="background:#95a5a6; width:100%; margin-top:5px;" onclick="nuevaVenta()">🗑️ Limpiar</button>
-    </div>
 
-    <div id="cierre-box">
-        <h2 style="margin:0;">📊 Cierre del Día</h2>
-        <p>Hoy es: <span id="fechaCierre"></span></p>
-        <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin:15px 0; text-align:left;">
-            <p>💰 Venta Total: <strong>$<span id="cierreVenta">0</span></strong></p>
-            <p>📉 Descuentos: <strong>$<span id="cierreDesc">0</span></strong></p>
-            <hr>
-            <p style="color:green; font-size:20px;">💵 Ganancia Real: <strong>$<span id="cierreGanancia">0</span></strong></p>
-        </div>
-        <button class="btn" style="background:red;" onclick="document.getElementById('cierre-box').style.display='none'">Cerrar</button>
+        <div style="text-align: center; margin-top: 20px;"><a href="index.html" style="color:#666; text-decoration:none; font-weight:bold;">⬅ Menú Principal</a></div>
     </div>
 
     <script>
-        let inventario = JSON.parse(localStorage.getItem('lunaviaInv')) || [];
-        let ventasDia = JSON.parse(localStorage.getItem('ventasDia')) || [];
-        let carrito = [];
-        let catActual = 'TODOS';
+        let productos = JSON.parse(localStorage.getItem('productos_pos')) || [];
 
-        function guardarInventario() {
-            const id = document.getElementById('invID').value.toUpperCase();
-            const cat = document.getElementById('invCat').value;
-            const costo = parseFloat(document.getElementById('invCosto').value);
-            const ganancia = parseFloat(document.getElementById('invGanancia').value);
-            const stock = parseInt(document.getElementById('invStock').value);
+        function mostrarIdMolde() {
+            const cat = document.getElementById('pCat').value;
+            const campo = document.getElementById('campo-molde');
+            campo.style.display = (cat === "🪴 Moldes") ? "block" : "none";
+        }
 
-            if(id && stock >= 0) {
-                const precioVenta = costo + (costo * (ganancia / 100));
-                inventario.push({ id, cat, costo, precioVenta, stock });
-                localStorage.setItem('lunaviaInv', JSON.stringify(inventario));
-                actualizarTodo();
-                alert("Guardado 🌙");
+        function registrar() {
+            const cat = document.getElementById('pCat').value;
+            const nom = document.getElementById('pNombre').value.trim();
+            const pre = parseFloat(document.getElementById('pPrecio').value);
+            const sto = parseInt(document.getElementById('pStock').value);
+            const idM = document.getElementById('pID').value.trim();
+
+            if(!nom) return alert("Escribe el nombre");
+
+            productos.push({ 
+                categoria: cat, 
+                nombre: (cat === "🪴 Moldes" ? "MOLDE: " + nom : nom), 
+                precio: pre, 
+                stock: sto,
+                moldeID: (cat === "🪴 Moldes" ? idM : "")
+            });
+
+            localStorage.setItem('productos_pos', JSON.stringify(productos));
+            limpiar();
+            dibujar();
+            alert("✅ Producto registrado!");
+        }
+
+        function dibujar() {
+            const lista = document.getElementById('inventario-lista');
+            lista.innerHTML = "<h3>📊 Mi Inventario</h3>";
+            
+            productos.forEach((p, i) => {
+                lista.innerHTML += `
+                <div class="item-prod" style="border-color: ${p.categoria.includes('Usagi') ? '#ff85a2' : '#9c27b0'}">
+                    <div>
+                        <strong>${p.nombre}</strong> <br>
+                        <small>${p.categoria}</small> 
+                        ${p.moldeID ? `<span class="tag-id">ID: ${p.moldeID}</span>` : ""}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <span>$${p.precio} | Stock: <strong>${p.stock}</strong></span>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-vender" onclick="vender(${i})">🛍️ Venta</button>
+                            <button onclick="borrar(${i})" style="border:none; background:none; color:red; cursor:pointer;">✕</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function vender(i) {
+            if(productos[i].stock > 0) {
+                productos[i].stock--;
+                localStorage.setItem('productos_pos', JSON.stringify(productos));
+                dibujar();
+            } else {
+                alert("¡Sin stock!");
             }
         }
 
-        function actualizarTodo() {
-            const tabla = document.querySelector('#tablaExistencias tbody');
-            const select = document.getElementById('selectVenta');
-            tabla.innerHTML = '';
-            select.innerHTML = '';
-
-            inventario.forEach((prod, index) => {
-                if(catActual === 'TODOS' || prod.cat === catActual) {
-                    const low = prod.stock <= 2 ? 'low-stock' : '';
-                    tabla.innerHTML += `<tr class="${low}"><td>${prod.id}</td><td>$${prod.precioVenta.toFixed(2)}</td><td>${prod.stock}</td><td><button onclick="eliminar(${index})">🗑️</button></td></tr>`;
-                    select.innerHTML += `<option value="${index}">${prod.id} ($${prod.precioVenta})</option>`;
-                }
-            });
-        }
-
-        function filtrar(cat, btn) {
-            catActual = cat;
-            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            actualizarTodo();
-        }
-
-        function agregarAVenta() {
-            const idx = document.getElementById('selectVenta').value;
-            const cant = parseInt(document.getElementById('cantVenta').value);
-            if(idx !== "") {
-                const p = inventario[idx];
-                if(p.stock >= cant) {
-                    carrito.push({ ...p, cant });
-                    p.stock -= cant;
-                    localStorage.setItem('lunaviaInv', JSON.stringify(inventario));
-                    renderizarNota();
-                    actualizarTodo();
-                } else alert("Sin stock");
+        function borrar(i) {
+            if(confirm("¿Borrar del inventario?")) {
+                productos.splice(i, 1);
+                localStorage.setItem('productos_pos', JSON.stringify(productos));
+                dibujar();
             }
         }
 
-        function renderizarNota() {
-            document.getElementById('fechaNota').innerText = new Date().toLocaleDateString();
-            const lista = document.getElementById('listaItemsNota');
-            let sub = 0; lista.innerHTML = '';
-            carrito.forEach(i => {
-                sub += (i.precioVenta * i.cant);
-                lista.innerHTML += `<div class="item-venta"><span>${i.cant}x ${i.id}</span><span>$${(i.precioVenta * i.cant).toFixed(2)}</span></div>`;
-            });
-            const desc = parseFloat(document.getElementById('descVenta').value) || 0;
-            document.getElementById('subTotalNota').innerText = sub.toFixed(2);
-            document.getElementById('descTotalNota').innerText = desc.toFixed(2);
-            document.getElementById('granTotalNota').innerText = (sub - desc).toFixed(2);
+        function limpiar() {
+            document.getElementById('pNombre').value = "";
+            document.getElementById('pPrecio').value = "0";
+            document.getElementById('pStock').value = "1";
+            document.getElementById('pID').value = "";
         }
 
-        function descargarNota() {
-            html2canvas(document.getElementById('nota-final')).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'Ticket_Lunavia.png';
-                link.href = canvas.toDataURL();
-                link.click();
-                
-                // Guardar para el cierre
-                const total = parseFloat(document.getElementById('granTotalNota').innerText);
-                const desc = parseFloat(document.getElementById('descTotalNota').innerText);
-                let costoTotalVenta = 0;
-                carrito.forEach(i => costoTotalVenta += (i.costo * i.cant));
-                
-                ventasDia.push({ total, desc, costo: costoTotalVenta, fecha: new Date().toLocaleDateString() });
-                localStorage.setItem('ventasDia', JSON.stringify(ventasDia));
-                nuevaVenta();
-            });
-        }
-
-        function verCierre() {
-            const hoy = new Date().toLocaleDateString();
-            const hoyVentas = ventasDia.filter(v => v.fecha === hoy);
-            let totalV = 0, totalD = 0, totalG = 0;
-            hoyVentas.forEach(v => {
-                totalV += v.total;
-                totalD += v.desc;
-                totalG += (v.total - v.costo);
-            });
-            document.getElementById('fechaCierre').innerText = hoy;
-            document.getElementById('cierreVenta').innerText = totalV.toFixed(2);
-            document.getElementById('cierreDesc').innerText = totalD.toFixed(2);
-            document.getElementById('cierreGanancia').innerText = totalG.toFixed(2);
-            document.getElementById('cierre-box').style.display = 'block';
-        }
-
-        function nuevaVenta() { carrito = []; renderizarNota(); }
-        function eliminar(i) { inventario.splice(i,1); localStorage.setItem('lunaviaInv', JSON.stringify(inventario)); actualizarTodo(); }
-        actualizarTodo();
+        window.onload = dibujar;
     </script>
 </body>
 </html>
