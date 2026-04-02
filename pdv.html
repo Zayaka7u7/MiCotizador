@@ -14,12 +14,12 @@
         .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 10px; }
         .btn-add { background-color: #9c27b0; }
         
-        /* Estilo especial para Moldes */
         #campo-molde { background: #e8f5e9; padding: 10px; border-radius: 8px; border: 1px dashed #4caf50; margin-top: 10px; display: none; }
         
-        .item-prod { background: white; padding: 12px; border-radius: 10px; margin-top: 10px; border-left: 5px solid #9c27b0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .item-prod { background: white; padding: 12px; border-radius: 10px; margin-top: 10px; border-left: 5px solid #9c27b0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .tag-id { background: #4caf50; color: white; padding: 2px 6px; border-radius: 5px; font-size: 10px; font-weight: bold; }
         .btn-vender { background: #4caf50; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .alerta-stock { background: #ffebee; color: #c62828; padding: 5px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-top: 5px; display: block; border: 1px solid #ef9a9a; }
     </style>
 </head>
 <body>
@@ -38,22 +38,24 @@
 
             <div id="campo-molde">
                 <label>🆔 ID del Molde (Compra):</label>
-                <input type="text" id="pID" placeholder="Ej. M-001 / Ali-2026">
+                <input type="text" id="pID" placeholder="Ej. M-001">
             </div>
 
             <label>Nombre del Producto:</label>
-            <input type="text" id="pNombre" placeholder="Ej. Maceta Burbuja">
+            <input type="text" id="pNombre" placeholder="Nombre">
             
             <div style="display: flex; gap: 10px;">
-                <div style="flex:1;"><label>Precio $:</label><input type="number" id="pPrecio" value="0"></div>
-                <div style="flex:1;"><label>Stock:</label><input type="number" id="pStock" value="1"></div>
+                <div style="flex:1;"><label>Costo Compra $:</label><input type="number" id="pCosto" value="0"></div>
+                <div style="flex:1;"><label>Precio Venta $:</label><input type="number" id="pPrecio" value="0"></div>
             </div>
+            
+            <label>Stock Inicial:</label>
+            <input type="number" id="pStock" value="1">
 
-            <button class="btn btn-add" onclick="registrar()">💾 Guardar en Inventario</button>
+            <button class="btn btn-add" onclick="registrar()">💾 Guardar Inventario</button>
         </div>
 
-        <div id="inventario-lista">
-            </div>
+        <div id="inventario-lista"></div>
 
         <div style="text-align: center; margin-top: 20px;"><a href="index.html" style="color:#666; text-decoration:none; font-weight:bold;">⬅ Menú Principal</a></div>
     </div>
@@ -63,52 +65,57 @@
 
         function mostrarIdMolde() {
             const cat = document.getElementById('pCat').value;
-            const campo = document.getElementById('campo-molde');
-            campo.style.display = (cat === "🪴 Moldes") ? "block" : "none";
+            document.getElementById('campo-molde').style.display = (cat === "🪴 Moldes") ? "block" : "none";
         }
 
         function registrar() {
             const cat = document.getElementById('pCat').value;
             const nom = document.getElementById('pNombre').value.trim();
-            const pre = parseFloat(document.getElementById('pPrecio').value);
-            const sto = parseInt(document.getElementById('pStock').value);
+            const costo = parseFloat(document.getElementById('pCosto').value) || 0;
+            const precio = parseFloat(document.getElementById('pPrecio').value) || 0;
+            const stock = parseInt(document.getElementById('pStock').value) || 0;
             const idM = document.getElementById('pID').value.trim();
 
-            if(!nom) return alert("Escribe el nombre");
+            if(!nom) return alert("Ponle nombre al producto");
 
             productos.push({ 
                 categoria: cat, 
                 nombre: (cat === "🪴 Moldes" ? "MOLDE: " + nom : nom), 
-                precio: pre, 
-                stock: sto,
+                costo: costo,
+                precio: precio, 
+                stock: stock,
                 moldeID: (cat === "🪴 Moldes" ? idM : "")
             });
 
             localStorage.setItem('productos_pos', JSON.stringify(productos));
             limpiar();
             dibujar();
-            alert("✅ Producto registrado!");
+            alert("✅ ¡Producto guardado!");
         }
 
         function dibujar() {
             const lista = document.getElementById('inventario-lista');
-            lista.innerHTML = "<h3>📊 Mi Inventario</h3>";
+            lista.innerHTML = "<h3>📊 Inventario Actual</h3>";
             
             productos.forEach((p, i) => {
+                const ganancia = p.precio - p.costo;
                 lista.innerHTML += `
                 <div class="item-prod" style="border-color: ${p.categoria.includes('Usagi') ? '#ff85a2' : '#9c27b0'}">
-                    <div>
-                        <strong>${p.nombre}</strong> <br>
-                        <small>${p.categoria}</small> 
-                        ${p.moldeID ? `<span class="tag-id">ID: ${p.moldeID}</span>` : ""}
+                    <strong>${p.nombre}</strong> <br>
+                    <small>${p.categoria}</small> ${p.moldeID ? `<span class="tag-id">ID: ${p.moldeID}</span>` : ""}
+                    <div style="font-size:12px; margin: 5px 0;">
+                        <span>Costo: $${p.costo} | Venta: $${p.precio}</span><br>
+                        <span style="color:green;">Ganancia: $${ganancia.toFixed(2)}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                        <span>$${p.precio} | Stock: <strong>${p.stock}</strong></span>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>Stock: <strong>${p.stock}</strong></span>
                         <div style="display:flex; gap:5px;">
                             <button class="btn-vender" onclick="vender(${i})">🛍️ Venta</button>
                             <button onclick="borrar(${i})" style="border:none; background:none; color:red; cursor:pointer;">✕</button>
                         </div>
                     </div>
+                    ${p.stock === 1 ? `<span class="alerta-stock">⚠️ ¡ÚLTIMA PIEZA! Resurtir pronto.</span>` : ""}
+                    ${p.stock === 0 ? `<span class="alerta-stock" style="color:gray; border-color:#ccc;">🚫 AGOTADO</span>` : ""}
                 </div>`;
             });
         }
@@ -116,15 +123,18 @@
         function vender(i) {
             if(productos[i].stock > 0) {
                 productos[i].stock--;
+                if(productos[i].stock === 1) {
+                    alert("⚠️ ¡Atención! Solo queda 1 pieza de " + productos[i].nombre);
+                }
                 localStorage.setItem('productos_pos', JSON.stringify(productos));
                 dibujar();
             } else {
-                alert("¡Sin stock!");
+                alert("¡Ya no tienes stock de este producto!");
             }
         }
 
         function borrar(i) {
-            if(confirm("¿Borrar del inventario?")) {
+            if(confirm("¿Segura que quieres borrarlo?")) {
                 productos.splice(i, 1);
                 localStorage.setItem('productos_pos', JSON.stringify(productos));
                 dibujar();
@@ -133,6 +143,7 @@
 
         function limpiar() {
             document.getElementById('pNombre').value = "";
+            document.getElementById('pCosto').value = "0";
             document.getElementById('pPrecio').value = "0";
             document.getElementById('pStock').value = "1";
             document.getElementById('pID').value = "";
