@@ -3,8 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Lunavia Pro 🌙</title>
+    <title>Calculadora Lunavia & Usagi 🌙🐰</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 10px; color: #333; }
+        .contenedor { max-width: 450px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #4b0082; margin-top: 0; }
+        .seccion { background: #fdfbff; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; }
+        label { font-weight: bold; font-size: 12px; display: block; margin-top: 8px; }
+        input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 10px; }
+        
+        /* Estilos TikTok Shop */
+        .tt-container { background: #000; color: #fff; padding: 15px; border-radius: 20px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .tt-input { background: #222 !important; color: #fff !important; border: 1px solid #444 !important; }
+        .tt-resumen { background: #111; padding: 10px; border-radius: 10px; font-size: 13px; margin-top: 10px; }
+        
+        .item-lista { background:#fff; padding:5px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd; display:flex; justify-content:space-between; font-size:11px; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <h2>🧮 Calculadora de Producción</h2>
+
+        <div class="seccion">
+            <strong>📦 Registrar Insumo</strong>
+            <div style="display: flex; gap: 5px;">
+                <select id="catInsumo" style="width: 70px;">
+                    <option>🕯️</option>
+                    <option>🧶</option>
+                    <option>🪴</option>
+                    <option>🔑</option>
+                </select>
+                <input type="text" id="nombreMat" placeholder="Nombre (ej. Cera soja)" style="flex:1;">
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="costoMat" placeholder="Costo $">
+                <input type="number" id="cantMat" placeholder="Cantidad">
+                <select id="unidadMat" style="width: 80px;">
+                    <option value="gr">gr</option>
+                    <option value="kg">kg</option>
+                    <option value="ml">ml</option>
+                    <option value="L">L</option>
+                    <option value="m">m</option>
+                    <option value="pza">pza</option>
+                </select>
+            </div>
+            <button class="btn" style="background: #9c27b0;" onclick="guardarInsumo()">💾 Guardar Insumo</button>
+        </div>
+
+        <div class="seccion" style="background: #fff3e0;">
+            <strong>🧪 Calcular Costo de Pieza</strong>
+            <select id="selectInsumo" onchange="document.getElementById('usoCant').focus()"></select>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <input type="number" id="usoCant" placeholder="¿Cuánto usaste?">
+                <button class="btn" style="background: #ff9800; margin-top: 4px;" onclick="sumarPieza()">➕ Sumar</button>
+            </div>
+            <div id="resumen" style="font-size: 12px; margin-top: 10px; color: #555;"></div>
+        </div>
+
+        <div class="seccion">
+            <label>Ganancia deseada (%):</label>
+            <input type="number" id="porcGanancia" value="50" oninput="calcularVenta()">
+            
+            <div style="margin-top: 15px; font-size: 14px;">
+                Costo Producción: <strong>$<span id="totalProduccion">0.00</span></strong><br>
+                Precio sugerido: <strong style="color: green; font-size: 18px;">$<span id="totalVenta">0.00</span></strong>
+            </div>
+
+            <input type="text" id="nombreProdFinal" placeholder="Nombre del producto final" style="margin-top: 10px;">
+            <button class="btn" style="background: #4caf50;" onclick="guardarParaCotizador()">✨ Guardar para Cotizador</button>
+            
+            <button onclick="resetearCalculoActual()" style="background:#757575; color:white; width:100%; padding:10px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">
+                🧹 Borrar y Empezar otro
+            </button>
+        </div>
+
+        <div class="tt-container">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">🖤</span>
+                <strong style="font-size: 16px;">Simulador TikTok Shop</strong>
+            </div>
+            <label style="color: #bbb; font-size: 11px;">Precio a poner en TikTok:</label>
+            <input type="number" id="precioTikTokManual" placeholder="$0.00" oninput="calcularTikTokIndependiente()" class="tt-input">
+
+            <div class="tt-resumen">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Cargos e Impuestos (23.1%):</span>
+                    <span style="color: #ff4550;">-$<span id="ttComisionIndep">0.00</span></span>
+                </div>
+                <hr style="border: 0; border-top: 1px solid #333; margin: 8px 0;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
+                    <span>Recibes neto:</span>
+                    <span style="color: #00f2ea;">$<span id="ttGananciaIndep">0.00</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;"><a href="index.html" style="color:#666; text-decoration:none; font-weight:bold;">⬅ Menú Principal</a></div>
+        
+        <div id="lista-insumos" style="margin-top: 20px; opacity: 0.6;">
+            </div>
+    </div>
+
     <script>
+        let acumulado = 0;
+
         function obtenerInsumos() { return JSON.parse(localStorage.getItem('insumos_v3')) || []; }
 
         function guardarInsumo() {
@@ -25,11 +129,7 @@
             let lista = obtenerInsumos();
             lista.push({ nombre: cat + " " + nom, unidad: uniUso, precio: precioU });
             localStorage.setItem('insumos_v3', JSON.stringify(lista));
-
             document.getElementById('nombreMat').value = "";
-            document.getElementById('costoMat').value = "0";
-            document.getElementById('cantMat').value = "1";
-            alert("✅ Guardado!");
             dibujarTodo();
         }
 
@@ -37,11 +137,11 @@
             const div = document.getElementById('lista-insumos');
             const sel = document.getElementById('selectInsumo');
             const lista = obtenerInsumos();
-            div.innerHTML = "";
+            div.innerHTML = "<strong>📦 Mis Materiales Base:</strong><br>";
             sel.innerHTML = '<option value="">-- Elige Material --</option>';
             lista.forEach((item, i) => {
-                div.innerHTML += `<div style="background:#fff; padding:5px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd; display:flex; justify-content:space-between; font-size:11px;">
-                    <span>${item.nombre} ($${item.precio.toFixed(3)})</span>
+                div.innerHTML += `<div class="item-lista">
+                    <span>${item.nombre} ($${item.precio.toFixed(3)} / ${item.unidad})</span>
                     <button onclick="borrar(${i})" style="color:red; border:none; background:none;">X</button>
                 </div>`;
                 let opt = document.createElement("option");
@@ -56,7 +156,6 @@
             dibujarTodo();
         }
 
-        let acumulado = 0;
         function sumarPieza() {
             const i = document.getElementById('selectInsumo').value;
             const cant = parseFloat(document.getElementById('usoCant').value) || 0;
@@ -67,7 +166,7 @@
                 acumulado += costoItem;
                 document.getElementById('resumen').innerHTML += `<div>• ${ins.nombre}: $${costoItem.toFixed(2)}</div>`;
                 calcularVenta();
-                document.getElementById('usoCant').value = 0;
+                document.getElementById('usoCant').value = "";
             }
         }
 
@@ -78,80 +177,37 @@
             document.getElementById('totalVenta').innerText = venta.toFixed(2);
         }
 
+        function calcularTikTokIndependiente() {
+            const precioManual = parseFloat(document.getElementById('precioTikTokManual').value) || 0;
+            const comision = precioManual * 0.2305; // 23.05% de cargos totales
+            const neto = precioManual - comision;
+            document.getElementById('ttComisionIndep').innerText = comision.toFixed(2);
+            document.getElementById('ttGananciaIndep').innerText = neto.toFixed(2);
+        }
+
+        function resetearCalculoActual() {
+            if(confirm("¿Segura que quieres borrar el cálculo actual?")) {
+                acumulado = 0;
+                document.getElementById('resumen').innerHTML = "";
+                document.getElementById('totalProduccion').innerText = "0.00";
+                document.getElementById('totalVenta').innerText = "0.00";
+                document.getElementById('nombreProdFinal').value = "";
+                alert("🧹 ¡Listo para un nuevo producto!");
+            }
+        }
+
         function guardarParaCotizador() {
             const nomFinal = document.getElementById('nombreProdFinal').value.trim();
             const precioV = document.getElementById('totalVenta').innerText;
             if(!nomFinal) { alert("⚠️ Ponle nombre al producto"); return; }
-            
             let prods = JSON.parse(localStorage.getItem('productosLunavia')) || [];
-            prods.push({ nombre: nomFinal, costoBase: precioV }); // Guardamos el precio de venta final
+            prods.push({ nombre: nomFinal, costoBase: precioV }); 
             localStorage.setItem('productosLunavia', JSON.stringify(prods));
-            
             alert("✨ ¡Guardado para Cotizador!");
             location.reload(); 
         }
 
         window.onload = dibujarTodo;
     </script>
-    <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 10px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        .box { background: #fdfbff; padding: 10px; border: 1px solid #e1bee7; border-radius: 8px; margin-bottom: 10px; }
-        input, select { width: 100%; padding: 8px; margin: 4px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; color: white; }
-    </style>
-</head>
-<body>
-
-    <div class="card">
-        <h3 style="text-align:center; color:#4b0082; margin:0 0 10px 0;">Calculadora de Precios 🌙</h3>
-
-        <div class="box">
-            <strong>1. Registro de Insumos</strong>
-            <div style="display:flex; gap:5px;">
-                <select id="catInsumo" style="width: 35%;">
-    <option value="🕯️">Vela</option>
-    <option value="🧶">Trico</option>
-    <option value="🪴">Yeso</option>
-    <option value="🔑">Llaveros</option> <option value="✨">Otro</option>
-</select>
-                <input type="text" id="nombreMat" placeholder="Nombre material">
-            </div>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="costoMat" placeholder="Costo $">
-                <input type="number" id="cantMat" placeholder="Cantidad">
-            </div>
-            <select id="unidadMat">
-                <option value="gr">Gramos</option><option value="kg">Kilos</option>
-                <option value="ml">Mililitros</option><option value="L">Litros</option>
-                <option value="cm">Centímetros</option><option value="m">Metros</option>
-                <option value="pz">Piezas</option>
-            </select>
-            <button style="background:#9c27b0;" onclick="guardarInsumo()">💾 Guardar Material</button>
-            <div id="lista-insumos" style="margin-top:8px; max-height:100px; overflow-y:auto;"></div>
-        </div>
-
-        <div class="box">
-            <strong>2. Cálculo de Pieza</strong>
-            <select id="selectInsumo"></select>
-            <input type="number" id="usoCant" placeholder="Cantidad usada">
-            <button style="background:#2196f3;" onclick="sumarPieza()">➕ Sumar</button>
-            <div id="resumen" style="font-size:11px; margin-top:5px; color:#555;"></div>
-        </div>
-
-        <div style="background:#fff9c4; padding:12px; border-radius:10px; border:2px solid #fbc02d;">
-            <div style="font-size:12px;">Costo Producción: $<span id="totalProduccion">0.00</span></div>
-            <label style="font-size:12px;">% Ganancia:</label>
-            <input type="number" id="porcGanancia" value="100" oninput="calcularVenta()" style="height:30px;">
-            <div style="font-size:18px; font-weight:bold; color:#d32f2f;">Precio Sugerido: $<span id="totalVenta">0.00</span></div>
-            
-            <hr style="border:0; border-top:1px solid #fbc02d; margin:10px 0;">
-            <input type="text" id="nombreProdFinal" placeholder="Nombre (ej. Vela Osito)">
-            <button style="background:#ff9800;" onclick="guardarParaCotizador()">✨ Guardar Producto</button>
-        </div>
-
-        <p style="text-align:center;"><a href="index.html" style="text-decoration:none; color:gray; font-size:12px;">⬅ Menú</a></p>
-    </div>
-
 </body>
 </html>
