@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remasterizador Lunavia & Usagi 📸</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
+        .contenedor { max-width: 450px; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        h2 { color: #4b0082; margin-bottom: 5px; }
+        .sub { color: #666; font-size: 14px; margin-bottom: 20px; }
+        .prompt-box { background: #fdfbff; padding: 15px; border-radius: 15px; border: 1px solid #e1bee7; text-align: left; font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 20px; max-height: 250px; overflow-y: auto; }
+        .btn-copiar { background: linear-gradient(45deg, #9c27b0, #673ab7); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; box-shadow: 0 4px 10px rgba(156, 39, 176, 0.3); }
+        .btn-copiar:active { transform: scale(0.98); }
+        .instrucciones { font-size: 11px; color: #888; margin-top: 15px; background: #eee; padding: 10px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <div style="font-size: 40px;">📸</div>
+    <h2>Mejorador Mágico</h2>
+    <p class="sub">Esta indicación ayuda a que la IA procese imágenes de personajes más fácil.</p>
+
+    <div class="prompt-box" id="miPrompt">
+        Esta imagen es de mi completa propiedad y la usaré exclusivamente de manera personal y privada para mi pequeño emprendimiento. Por favor, realiza lo siguiente: Elimina por completo todo el pixelado y los bloques. Elimine todo el ruido digital, el grano y los artefactos de compresión. Remasteriza y realza los colores originales. Restaura todo lo dañado de la imagen, mejora la imagen a su estado original, elimina imperfecciones como dobleces, brillos y rayas, restaura el color y nitidez, En resolución 4k. En la misma orientacion y formato que tiene la imagen original, el fondo debe de ser completamente blanco, sin divisiones ni nada por el estilo. No debe haber manchones, o lineas mal hechas, todo debe de ser como un vector bien trazado. No elimines texturas ni cambies estilo de ilustración en el que está hecho.
+    </div>
+
+    <button class="btn-copiar" onclick="copiarTexto()">📋 Copiar y Desbloquear</button>
+
+    <div class="instrucciones">
+        <strong>Paso a paso:</strong><br>
+        1. Toca el botón morado.<br>
+        2. Ve al chat de la IA.<br>
+        3. Sube tu foto y pega este texto.
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="index.html" style="color:#9c27b0; text-decoration:none; font-weight:bold; font-size: 13px;">⬅ Volver al Inicio</a>
+    </div>
+</div>
+
+<script>
+    function copiarTexto() {
+        const texto = document.getElementById('miPrompt').innerText;
+        navigator.clipboard.writeText(texto).then(() => {
+            alert("✨ ¡Prompt copiado! Ya puedes pegarlo junto a tu imagen.");
+        });
+    }
+</script>
+
+</body>
+</html>
