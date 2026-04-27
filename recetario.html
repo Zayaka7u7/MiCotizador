@@ -3,84 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recetario Multimaterial 🌙🐰</title>
+    <title>Recetario Maestro Lunavia & Usagi 🌙🐰</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #fdfbff; padding: 10px; color: #333; }
         .contenedor { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #4b0082; margin-top: 0; }
+        h2 { text-align: center; color: #4b0082; margin-bottom: 20px; }
         .seccion { background: #f3e5f5; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e1bee7; }
+        .selector-material { background: #4b0082; padding: 15px; border-radius: 15px; color: white; margin-bottom: 15px; }
         label { font-weight: bold; font-size: 12px; display: block; margin-top: 8px; }
         input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; }
-        .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; color: white; transition: 0.3s; }
+        .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; color: white; }
         .btn-save { background: #4caf50; }
-        .btn-backup { background: #607d8b; font-size: 11px; margin-top: 20px; }
+        .resultado-box { background: #fff; padding: 15px; border-radius: 12px; margin-top: 10px; border: 2px dashed #9c27b0; }
         .receta-card { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 12px; margin-top: 10px; border-left: 5px solid #9c27b0; }
-        .resultado-box { background: #fff; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px dashed #9c27b0; text-align: center; }
-        .badge { background: #f9f9f9; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 12px; border: 1px solid #eee; }
-        h4 { margin: 10px 0 5px 0; color: #4b0082; border-bottom: 1px solid #e1bee7; padding-bottom: 3px; }
-        .selector-material { background: #fff; padding: 10px; border-radius: 10px; border: 2px solid #4b0082; margin-bottom: 10px; }
+        .badge-desglose { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 8px; font-size: 12px; border: 1px solid #eee; line-height: 1.6; }
+        h4 { margin: 5px 0; color: #4b0082; }
     </style>
 </head>
 <body>
 
 <div class="contenedor">
-    <h2>📖 Recetario Lunavia & Usagi</h2>
+    <h2>✨ Recetario Producción</h2>
 
     <div class="selector-material">
-        <label>🛠️ ¿Qué material vas a usar?</label>
-        <select id="tipoMaterial" onchange="calcularPesoPorAgua()">
-            <option value="0.90">🕯️ Cera (Soja, Malasia, etc.)</option>
-            <option value="1.50">🗿 Yeso / Marmolina</option>
-            <option value="1.10">💧 Resina</option>
+        <label style="color: white;">💎 Material a trabajar:</label>
+        <select id="tipoMaterial" onchange="limpiarYCalcular()">
+            <option value="vela">🕯️ Vela (Cera + Estearina + Esencia)</option>
+            <option value="yeso">🗿 Yeso (Yeso + Agua + Resistol)</option>
+            <option value="resina">💧 Resina (Comp. A + Comp. B)</option>
         </select>
     </div>
 
     <div class="seccion" style="background: #e1f5fe; border-color: #b3e5fc;">
-        <h4>💧 1. Calcular Peso con Agua (para moldes)</h4>
+        <h4>💧 1. Cálculo por Molde</h4>
         <div style="display: flex; gap: 5px;">
             <div style="flex:1;">
                 <label>Molde con agua (g):</label>
-                <input type="number" id="moldeAgua" placeholder="0" oninput="calcularPesoPorAgua()">
+                <input type="number" id="moldeAgua" placeholder="0" oninput="calcularPorAgua()">
             </div>
             <div style="flex:1;">
                 <label>Molde vacío (g):</label>
-                <input type="number" id="moldeVacio" placeholder="0" oninput="calcularPesoPorAgua()">
+                <input type="number" id="moldeVacio" placeholder="0" oninput="calcularPorAgua()">
             </div>
-        </div>
-        <div id="resAgua" style="font-size: 11px; margin-top: 8px; color: #0277bd; font-weight: bold; text-align: center;">
-            Calculando densidad según material...
         </div>
     </div>
 
     <div class="seccion">
-        <h4>🧪 2. Proporción de Mezcla</h4>
-        <label>Peso de material base a usar (g):</label>
-        <input type="number" id="pesoTotal" placeholder="Ej. 150" oninput="calcularMezcla()">
+        <h4>🧪 2. Desglose de Mezcla</h4>
+        <label>Peso total deseado (g):</label>
+        <input type="number" id="pesoTotal" placeholder="Ej. 200" oninput="calcularMezcla()">
         
-        <label>% de Esencia / Aditivo:</label>
-        <select id="porcEsencia" onchange="calcularMezcla()">
-            <option value="0.00">0% (Sin aroma)</option>
-            <option value="0.08">8% (Estándar)</option>
-            <option value="0.10">10% (Fuerte)</option>
-            <option value="0.12">12% (Máximo)</option>
-        </select>
+        <div id="controlesExtra"></div>
 
         <div class="resultado-box" id="resultadoCalculo">
-            Coloca el peso para ver el desglose...
+            Esperando datos...
         </div>
     </div>
 
     <div class="seccion" style="background: #e8f5e9; border-color: #c8e6c9;">
-        <h4>📝 3. Guardar Receta</h4>
-        <input type="text" id="nombreReceta" placeholder="Nombre (Ej: Maceta Usagi)">
-        <input type="text" id="detallesMat" placeholder="Marca o tipo específico (Ej: Cera Malasia)">
-        <input type="text" id="aroma" placeholder="Aroma o Colorante">
-        <button class="btn btn-save" onclick="guardarReceta()">💾 Guardar Receta Completa</button>
+        <h4>📝 3. Guardar en Bitácora</h4>
+        <input type="text" id="nombreReceta" placeholder="Nombre de la pieza">
+        <input type="text" id="notas" placeholder="Aroma, color o marca del material">
+        <button class="btn btn-save" onclick="guardarReceta()">💾 Guardar Receta</button>
     </div>
 
     <div id="listaRecetas"></div>
-
-    <button class="btn btn-backup" onclick="exportarRecetas()">📥 Descargar Respaldo</button>
     
     <div style="text-align:center; margin-top:20px;">
         <a href="index.html" style="color:#9c27b0; text-decoration:none; font-weight:bold; font-size:13px;">⬅ Menú Principal</a>
@@ -88,100 +75,105 @@
 </div>
 
 <script>
-    let recetas = JSON.parse(localStorage.getItem('recetas_multimaterial_v1')) || [];
-    let ultimoPrincipal = 0;
-    let ultimoSecundario = 0;
+    let recetas = JSON.parse(localStorage.getItem('recetas_final_v3')) || [];
+    let textoDesgloseGlobal = "";
 
-    function calcularPesoPorAgua() {
+    function limpiarYCalcular() {
+        document.getElementById('pesoTotal').value = "";
+        calcularMezcla();
+    }
+
+    function calcularPorAgua() {
         const agua = parseFloat(document.getElementById('moldeAgua').value) || 0;
         const vacio = parseFloat(document.getElementById('moldeVacio').value) || 0;
-        const factor = parseFloat(document.getElementById('tipoMaterial').value);
-        const netoAgua = agua - vacio;
+        const mat = document.getElementById('tipoMaterial').value;
+        const neto = agua - vacio;
         
-        if (netoAgua > 0) {
-            const pesoEstimado = netoAgua * factor;
-            document.getElementById('resAgua').innerHTML = `Peso estimado de material: ${pesoEstimado.toFixed(1)}g`;
-            document.getElementById('pesoTotal').value = pesoEstimado.toFixed(1);
+        if (neto > 0) {
+            let factor = 0.90; // Vela
+            if (mat === 'yeso') factor = 1.50;
+            if (mat === 'resina') factor = 1.10;
+            
+            document.getElementById('pesoTotal').value = (neto * factor).toFixed(1);
             calcularMezcla();
         }
     }
 
     function calcularMezcla() {
-        const peso = parseFloat(document.getElementById('pesoTotal').value) || 0;
-        const porc = parseFloat(document.getElementById('porcEsencia').value);
-        
-        if (peso > 0) {
-            // El material base es el total menos el aditivo
-            ultimoPrincipal = peso / (1 + porc);
-            ultimoSecundario = peso - ultimoPrincipal;
+        const total = parseFloat(document.getElementById('pesoTotal').value) || 0;
+        const mat = document.getElementById('tipoMaterial').value;
+        const resBox = document.getElementById('resultadoCalculo');
+        textoDesgloseGlobal = "";
 
-            document.getElementById('resultadoCalculo').innerHTML = `
-                <div style="color:#4b0082; font-weight:bold;">Para ${peso}g totales:</div>
-                <div style="font-size: 16px;">🧱 Base: <strong>${ultimoPrincipal.toFixed(1)}g</strong></div>
-                <div style="font-size: 16px;">💧 Aditivo/Aroma: <strong>${ultimoSecundario.toFixed(1)}g</strong></div>
-            `;
-        } else {
-            document.getElementById('resultadoCalculo').innerText = "Coloca el peso para ver el desglose...";
+        if (total <= 0) {
+            resBox.innerText = "Ingresa un peso para desglosar.";
+            return;
         }
+
+        if (mat === 'vela') {
+            const esencia = total * 0.10; // 10% esencia
+            const base = total - esencia;
+            const estearina = base * 0.10; // 10% estearina de la base
+            const ceraPura = base - estearina;
+            
+            textoDesgloseGlobal = `• Cera: ${ceraPura.toFixed(1)}g<br>• Estearina: ${estearina.toFixed(1)}g<br>• Esencia: ${esencia.toFixed(1)}g`;
+        } 
+        else if (mat === 'yeso') {
+            const agua = total * 0.30; // 30% agua
+            const solido = total - agua;
+            const resistol = total * 0.05; // 5% resistol
+            const yesoPuro = solido - resistol;
+
+            textoDesgloseGlobal = `• Yeso: ${yesoPuro.toFixed(1)}g<br>• Agua: ${agua.toFixed(1)}g<br>• Resistol: ${resistol.toFixed(1)}g`;
+        }
+        else if (mat === 'resina') {
+            const compA = total * 0.60;
+            const compB = total * 0.40;
+            textoDesgloseGlobal = `• Componente A: ${compA.toFixed(1)}g<br>• Componente B: ${compB.toFixed(1)}g`;
+        }
+
+        resBox.innerHTML = `<strong>Desglose para ${total}g:</strong><br>${textoDesgloseGlobal}`;
     }
 
     function guardarReceta() {
-        const nombre = document.getElementById('nombreReceta').value.trim();
-        const material = document.getElementById('detallesMat').value.trim();
-        const aroma = document.getElementById('aroma').value.trim();
-        const pesoTotal = document.getElementById('pesoTotal').value;
-        const sel = document.getElementById('tipoMaterial');
-        const materialNombre = sel.options[sel.selectedIndex].text;
+        const nombre = document.getElementById('nombreReceta').value;
+        const mat = document.getElementById('tipoMaterial').value;
+        if (!nombre) return alert("Ponle nombre a la pieza");
 
-        if (!nombre) return alert("⚠️ Ponle nombre a la receta");
-
-        recetas.push({ 
-            nombre, material, aroma, materialNombre,
-            pesoTotal: pesoTotal || "0",
-            gramosBase: ultimoPrincipal.toFixed(1),
-            gramosAditivo: ultimoSecundario.toFixed(1)
+        recetas.push({
+            nombre,
+            material: mat.toUpperCase(),
+            notas: document.getElementById('notas').value,
+            peso: document.getElementById('pesoTotal').value,
+            desglose: textoDesgloseGlobal
         });
 
-        localStorage.setItem('recetas_multimaterial_v1', JSON.stringify(recetas));
+        localStorage.setItem('recetas_final_v3', JSON.stringify(recetas));
         document.getElementById('nombreReceta').value = "";
-        alert("✨ ¡Receta guardada!");
         dibujarRecetas();
     }
 
     function dibujarRecetas() {
-        const contenedor = document.getElementById('listaRecetas');
-        contenedor.innerHTML = "<h3>📚 Mis Recetas Guardadas</h3>";
+        const lista = document.getElementById('listaRecetas');
+        lista.innerHTML = "<h3>📚 Mis Piezas Guardadas</h3>";
         recetas.forEach((r, i) => {
-            contenedor.innerHTML += `
+            lista.innerHTML += `
                 <div class="receta-card">
-                    <strong style="color:#4b0082;">${r.nombre}</strong><br>
-                    <small>🛠️ ${r.materialNombre} (${r.material})</small><br>
-                    <small>🌸 Notas: ${r.aroma}</small>
-                    <div class="badge">
-                        <strong>Mezcla para ${r.pesoTotal}g:</strong><br>
-                        • Base: ${r.gramosBase}g | Aditivo: ${r.gramosAditivo}g
+                    <strong>${r.nombre}</strong> (${r.material})<br>
+                    <small>${r.notas}</small>
+                    <div class="badge-desglose">
+                        <strong>Peso Total: ${r.peso}g</strong><br>
+                        ${r.desglose}
                     </div>
-                    <div style="text-align:right;"><button onclick="borrarReceta(${i})" style="color:red; border:none; background:none; cursor:pointer; font-size:11px;">Eliminar ✕</button></div>
+                    <button onclick="borrar(${i})" style="color:red; border:none; background:none; cursor:pointer; font-size:10px;">Eliminar</button>
                 </div>`;
         });
     }
 
-    function borrarReceta(i) {
-        if (confirm("¿Borrar esta receta?")) {
-            recetas.splice(i, 1);
-            localStorage.setItem('recetas_multimaterial_v1', JSON.stringify(recetas));
-            dibujarRecetas();
-        }
-    }
-
-    function exportarRecetas() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recetas));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "respaldo_usagi_lunavia.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+    function borrar(i) {
+        recetas.splice(i, 1);
+        localStorage.setItem('recetas_final_v3', JSON.stringify(recetas));
+        dibujarRecetas();
     }
 
     window.onload = dibujarRecetas;
