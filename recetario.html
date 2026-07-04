@@ -34,6 +34,7 @@
         </select>
     </div>
 
+    <!-- CÁLCULO POR MOLDE (AGUA) -->
     <div class="seccion" style="background: #e1f5fe; border-color: #b3e5fc;">
         <h4>💧 1. Cálculo por Molde</h4>
         <div style="display: flex; gap: 5px;">
@@ -48,18 +49,18 @@
         </div>
     </div>
 
+    <!-- CALCULADORA DE MEZCLA -->
     <div class="seccion">
         <h4>🧪 2. Desglose de Mezcla</h4>
         <label>Peso total deseado (g):</label>
         <input type="number" id="pesoTotal" placeholder="Ej. 200" oninput="calcularMezcla()">
         
-        <div id="controlesExtra"></div>
-
         <div class="resultado-box" id="resultadoCalculo">
             Esperando datos...
         </div>
     </div>
 
+    <!-- GUARDAR -->
     <div class="seccion" style="background: #e8f5e9; border-color: #c8e6c9;">
         <h4>📝 3. Guardar en Bitácora</h4>
         <input type="text" id="nombreReceta" placeholder="Nombre de la pieza">
@@ -75,7 +76,7 @@
 </div>
 
 <script>
-    let recetas = JSON.parse(localStorage.getItem('recetas_final_v3')) || [];
+    let recetas = JSON.parse(localStorage.getItem('recetas_final_v4')) || [];
     let textoDesgloseGlobal = "";
 
     function limpiarYCalcular() {
@@ -116,7 +117,10 @@
             const estearina = base * 0.10; // 10% estearina de la base
             const ceraPura = base - estearina;
             
-            textoDesgloseGlobal = `• Cera: ${ceraPura.toFixed(1)}g<br>• Estearina: ${estearina.toFixed(1)}g<br>• Esencia: ${esencia.toFixed(1)}g`;
+            // Cálculo opcional del 1% de aditivo Olimpia basado en la cera base
+            const olimpiaSugerido = base * 0.01;
+            
+            textoDesgloseGlobal = `• Cera: ${ceraPura.toFixed(1)}g<br>• Estearina: ${estearina.toFixed(1)}g<br>• Esencia: ${esencia.toFixed(1)}g<br><span style="color:#7b1fa2; font-size:11px; font-weight:bold;">✨ Opcional - Aditivo Olimpia (1%): ${olimpiaSugerido.toFixed(1)}g</span>`;
         } 
         else if (mat === 'yeso') {
             const agua = total * 0.30; // 30% agua
@@ -143,12 +147,12 @@
         recetas.push({
             nombre,
             material: mat.toUpperCase(),
-            notas: document.getElementById('notas').value,
+            notes: document.getElementById('notas').value,
             peso: document.getElementById('pesoTotal').value,
             desglose: textoDesgloseGlobal
         });
 
-        localStorage.setItem('recetas_final_v3', JSON.stringify(recetas));
+        localStorage.setItem('recetas_final_v4', JSON.stringify(recetas));
         document.getElementById('nombreReceta').value = "";
         dibujarRecetas();
     }
@@ -160,7 +164,7 @@
             lista.innerHTML += `
                 <div class="receta-card">
                     <strong>${r.nombre}</strong> (${r.material})<br>
-                    <small>${r.notas}</small>
+                    <small>${r.notes || ''}</small>
                     <div class="badge-desglose">
                         <strong>Peso Total: ${r.peso}g</strong><br>
                         ${r.desglose}
@@ -172,7 +176,7 @@
 
     function borrar(i) {
         recetas.splice(i, 1);
-        localStorage.setItem('recetas_final_v3', JSON.stringify(recetas));
+        localStorage.setItem('recetas_final_v4', JSON.stringify(recetas));
         dibujarRecetas();
     }
 
