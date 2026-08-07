@@ -13,11 +13,12 @@
         input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 10px; }
         
-        /* Estilos TikTok Shop */
+        .alerta-receta { background: #e1bee7; color: #4b0082; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-bottom: 15px; text-align: center; display: none; }
+        
+        /* TikTok Shop */
         .tt-container { background: #000; color: #fff; padding: 15px; border-radius: 20px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .tt-input { background: #222 !important; color: #fff !important; border: 1px solid #444 !important; }
         .tt-resumen { background: #111; padding: 10px; border-radius: 10px; font-size: 13px; margin-top: 10px; }
-        
         .item-lista { background:#fff; padding:5px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd; display:flex; justify-content:space-between; font-size:11px; }
     </style>
 </head>
@@ -26,14 +27,18 @@
     <div class="contenedor">
         <h2>🧮 Calculadora de Producción</h2>
 
+        <div id="alertaReceta" class="alerta-receta"></div>
+
+        <!-- 1. REGISTRO DE MATERIALES -->
         <div class="seccion">
-            <strong>📦 Registrar Insumo</strong>
+            <strong>📦 Registrar Insumo Base</strong>
             <div style="display: flex; gap: 5px;">
                 <select id="catInsumo" style="width: 70px;">
                     <option>🕯️</option>
                     <option>🧶</option>
                     <option>🪴</option>
                     <option>🔑</option>
+                    <option>📦</option>
                 </select>
                 <input type="text" id="nombreMat" placeholder="Nombre (ej. Cera soja)" style="flex:1;">
             </div>
@@ -49,27 +54,43 @@
                     <option value="pza">pza</option>
                 </select>
             </div>
-            <button class="btn" style="background: #9c27b0;" onclick="guardarInsumo()">💾 Guardar Insumo</button>
+            <button class="btn" style="background: #9c27b0;" onclick="guardarInsumo()">💾 Guardar Insumo Base</button>
         </div>
 
+        <!-- 2. CÁLCULO DE PIEZA -->
         <div class="seccion" style="background: #fff3e0;">
-            <strong>🧪 Calcular Costo de Pieza</strong>
+            <strong>🧪 Sumar Insumo Registrado</strong>
             <select id="selectInsumo" onchange="document.getElementById('usoCant').focus()"></select>
             <div style="display: flex; gap: 5px; margin-top: 10px;">
                 <input type="number" id="usoCant" placeholder="¿Cuánto usaste?">
                 <button class="btn" style="background: #ff9800; margin-top: 4px;" onclick="sumarPieza()">➕ Sumar</button>
             </div>
+
+            <hr style="border:0; border-top: 1px solid #ffe0b2; margin: 15px 0;">
+
+            <!-- OBJETOS O GASTOS EXTRA -->
+            <strong>➕ Sumar Objeto / Gasto Extra Aparte</strong>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="nombreExtra" placeholder="Ej. Frasco, Mecha, Caja" style="flex:1;">
+                <input type="number" id="costoExtra" placeholder="Costo $" style="width: 100px;">
+                <button class="btn" style="background: #009688; margin-top: 4px; width: 80px;" onclick="sumarExtra()">➕ Add</button>
+            </div>
+
             <div id="resumen" style="font-size: 12px; margin-top: 10px; color: #555;"></div>
         </div>
 
+        <!-- 3. RESULTADOS Y REDONDEO -->
         <div class="seccion">
             <label>Ganancia deseada (%):</label>
             <input type="number" id="porcGanancia" value="50" oninput="calcularVenta()">
             
             <div style="margin-top: 15px; font-size: 14px;">
                 Costo Producción: <strong>$<span id="totalProduccion">0.00</span></strong><br>
-                Precio sugerido: <strong style="color: green; font-size: 18px;">$<span id="totalVenta">0.00</span></strong>
+                Precio calculado sugerido: <strong style="color: #666;">$<span id="totalVentaCalculado">0.00</span></strong>
             </div>
+
+            <label style="color: #2e7d32; font-size: 13px; margin-top: 10px;">🏷️ Precio Final Redondeado / A Cobrar ($):</label>
+            <input type="number" id="precioFinalRedondeado" placeholder="0.00" style="font-size: 18px; font-weight: bold; color: #2e7d32;">
 
             <input type="text" id="nombreProdFinal" placeholder="Nombre del producto final" style="margin-top: 10px;">
             <button class="btn" style="background: #4caf50;" onclick="guardarParaCotizador()">✨ Guardar para Cotizador</button>
@@ -79,6 +100,7 @@
             </button>
         </div>
 
+        <!-- 4. SIMULADOR TIKTOK SHOP -->
         <div class="tt-container">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 24px;">🖤</span>
@@ -102,8 +124,7 @@
 
         <div style="text-align: center; margin-top: 20px;"><a href="index.html" style="color:#666; text-decoration:none; font-weight:bold;">⬅ Menú Principal</a></div>
         
-        <div id="lista-insumos" style="margin-top: 20px; opacity: 0.6;">
-            </div>
+        <div id="lista-insumos" style="margin-top: 20px; opacity: 0.6;"></div>
     </div>
 
     <script>
@@ -137,7 +158,7 @@
             const div = document.getElementById('lista-insumos');
             const sel = document.getElementById('selectInsumo');
             const lista = obtenerInsumos();
-            div.innerHTML = "<strong>📦 Mis Materiales Base:</strong><br>";
+            div.innerHTML = "<strong>📦 Mis Insumos Base Registrados:</strong><br>";
             sel.innerHTML = '<option value="">-- Elige Material --</option>';
             lista.forEach((item, i) => {
                 div.innerHTML += `<div class="item-lista">
@@ -164,9 +185,23 @@
                 const ins = lista[i];
                 const costoItem = ins.precio * cant;
                 acumulado += costoItem;
-                document.getElementById('resumen').innerHTML += `<div>• ${ins.nombre}: $${costoItem.toFixed(2)}</div>`;
+                document.getElementById('resumen').innerHTML += `<div>• ${ins.nombre} (${cant}${ins.unidad}): $${costoItem.toFixed(2)}</div>`;
                 calcularVenta();
                 document.getElementById('usoCant').value = "";
+            }
+        }
+
+        function sumarExtra() {
+            const nomExtra = document.getElementById('nombreExtra').value.trim();
+            const cosExtra = parseFloat(document.getElementById('costoExtra').value) || 0;
+            if (nomExtra !== "" && cosExtra > 0) {
+                acumulado += cosExtra;
+                document.getElementById('resumen').innerHTML += `<div>• 📦 Extra (${nomExtra}): $${cosExtra.toFixed(2)}</div>`;
+                calcularVenta();
+                document.getElementById('nombreExtra').value = "";
+                document.getElementById('costoExtra').value = "";
+            } else {
+                alert("⚠️ Ingresa el nombre y costo del objeto extra.");
             }
         }
 
@@ -174,12 +209,13 @@
             const porc = parseFloat(document.getElementById('porcGanancia').value) || 0;
             const venta = acumulado + (acumulado * (porc / 100));
             document.getElementById('totalProduccion').innerText = acumulado.toFixed(2);
-            document.getElementById('totalVenta').innerText = venta.toFixed(2);
+            document.getElementById('totalVentaCalculado').innerText = venta.toFixed(2);
+            document.getElementById('precioFinalRedondeado').value = Math.ceil(venta); // Sugerencia redondeada
         }
 
         function calcularTikTokIndependiente() {
             const precioManual = parseFloat(document.getElementById('precioTikTokManual').value) || 0;
-            const comision = precioManual * 0.2305; // 23.05% de cargos totales
+            const comision = precioManual * 0.2305;
             const neto = precioManual - comision;
             document.getElementById('ttComisionIndep').innerText = comision.toFixed(2);
             document.getElementById('ttGananciaIndep').innerText = neto.toFixed(2);
@@ -190,24 +226,40 @@
                 acumulado = 0;
                 document.getElementById('resumen').innerHTML = "";
                 document.getElementById('totalProduccion').innerText = "0.00";
-                document.getElementById('totalVenta').innerText = "0.00";
+                document.getElementById('totalVentaCalculado').innerText = "0.00";
+                document.getElementById('precioFinalRedondeado').value = "";
                 document.getElementById('nombreProdFinal').value = "";
-                alert("🧹 ¡Listo para un nuevo producto!");
+                document.getElementById('alertaReceta').style.display = "none";
+                localStorage.removeItem('receta_transferida');
             }
         }
 
         function guardarParaCotizador() {
             const nomFinal = document.getElementById('nombreProdFinal').value.trim();
-            const precioV = document.getElementById('totalVenta').innerText;
-            if(!nomFinal) { alert("⚠️ Ponle nombre al producto"); return; }
+            const precioV = parseFloat(document.getElementById('precioFinalRedondeado').value) || parseFloat(document.getElementById('totalVentaCalculado').innerText);
+            if(!nomFinal) { alert("⚠️ Ponle nombre al producto final"); return; }
             let prods = JSON.parse(localStorage.getItem('productosLunavia')) || [];
-            prods.push({ nombre: nomFinal, costoBase: precioV }); 
+            prods.push({ nombre: nomFinal, costoBase: precioV.toFixed(2) }); 
             localStorage.setItem('productosLunavia', JSON.stringify(prods));
             alert("✨ ¡Guardado para Cotizador!");
+            localStorage.removeItem('receta_transferida');
             location.reload(); 
         }
 
-        window.onload = dibujarTodo;
+        function verificarRecetaTransferida() {
+            const receta = JSON.parse(localStorage.getItem('receta_transferida'));
+            if (receta) {
+                const alerta = document.getElementById('alertaReceta');
+                alerta.style.display = "block";
+                alerta.innerHTML = `📥 Cargarás la receta: <strong>${receta.nombre}</strong> (${receta.peso}g)`;
+                document.getElementById('nombreProdFinal').value = receta.nombre;
+            }
+        }
+
+        window.onload = function() {
+            dibujarTodo();
+            verificarRecetaTransferida();
+        };
     </script>
 </body>
 </html>
