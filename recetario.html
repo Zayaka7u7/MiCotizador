@@ -14,6 +14,7 @@
         input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; }
         .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; color: white; }
         .btn-save { background: #4caf50; }
+        .btn-backup { background: #607d8b; font-size: 11px; margin-top: 15px; }
         .resultado-box { background: #fff; padding: 15px; border-radius: 12px; margin-top: 10px; border: 2px dashed #9c27b0; }
         .receta-card { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 12px; margin-top: 10px; border-left: 5px solid #9c27b0; }
         .badge-desglose { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 8px; font-size: 12px; border: 1px solid #eee; line-height: 1.6; }
@@ -25,6 +26,7 @@
 <div class="contenedor">
     <h2>✨ Recetario Producción</h2>
 
+    <!-- SELECTOR DE MATERIAL -->
     <div class="selector-material">
         <label style="color: white;">💎 Material a trabajar:</label>
         <select id="tipoMaterial" onchange="limpiarYCalcular()">
@@ -34,7 +36,7 @@
         </select>
     </div>
 
-    <!-- CÁLCULO POR MOLDE (AGUA) -->
+    <!-- 1. CÁLCULO POR MOLDE (AGUA) -->
     <div class="seccion" style="background: #e1f5fe; border-color: #b3e5fc;">
         <h4>💧 1. Cálculo por Molde</h4>
         <div style="display: flex; gap: 5px;">
@@ -49,7 +51,7 @@
         </div>
     </div>
 
-    <!-- CALCULADORA DE MEZCLA -->
+    <!-- 2. CALCULADORA DE MEZCLA -->
     <div class="seccion">
         <h4>🧪 2. Desglose de Mezcla</h4>
         <label>Peso total deseado (g):</label>
@@ -60,7 +62,7 @@
         </div>
     </div>
 
-    <!-- GUARDAR -->
+    <!-- 3. GUARDAR RECETA -->
     <div class="seccion" style="background: #e8f5e9; border-color: #c8e6c9;">
         <h4>📝 3. Guardar en Bitácora</h4>
         <input type="text" id="nombreReceta" placeholder="Nombre de la pieza">
@@ -68,8 +70,11 @@
         <button class="btn btn-save" onclick="guardarReceta()">💾 Guardar Receta</button>
     </div>
 
+    <!-- LISTADO Y RESPALDO -->
     <div id="listaRecetas"></div>
     
+    <button class="btn btn-backup" onclick="exportarRecetas()">📥 Descargar Respaldo de Recetas</button>
+
     <div style="text-align:center; margin-top:20px;">
         <a href="index.html" style="color:#9c27b0; text-decoration:none; font-weight:bold; font-size:13px;">⬅ Menú Principal</a>
     </div>
@@ -117,7 +122,7 @@
             const estearina = base * 0.10; // 10% estearina de la base
             const ceraPura = base - estearina;
             
-            // Cálculo opcional del 1% de aditivo Olimpia basado en la cera base
+            // Sugerencia opcional del 1% de aditivo Olimpia
             const olimpiaSugerido = base * 0.01;
             
             textoDesgloseGlobal = `• Cera: ${ceraPura.toFixed(1)}g<br>• Estearina: ${estearina.toFixed(1)}g<br>• Esencia: ${esencia.toFixed(1)}g<br><span style="color:#7b1fa2; font-size:11px; font-weight:bold;">✨ Opcional - Aditivo Olimpia (1%): ${olimpiaSugerido.toFixed(1)}g</span>`;
@@ -142,7 +147,7 @@
     function guardarReceta() {
         const nombre = document.getElementById('nombreReceta').value;
         const mat = document.getElementById('tipoMaterial').value;
-        if (!nombre) return alert("Ponle nombre a la pieza");
+        if (!nombre) return alert("⚠️ Ponle nombre a la pieza");
 
         recetas.push({
             nombre,
@@ -160,6 +165,11 @@
     function dibujarRecetas() {
         const lista = document.getElementById('listaRecetas');
         lista.innerHTML = "<h3>📚 Mis Piezas Guardadas</h3>";
+        
+        if (recetas.length === 0) {
+            lista.innerHTML += "<p style='color:#888; font-size:12px;'>Aún no tienes piezas guardadas.</p>";
+        }
+
         recetas.forEach((r, i) => {
             lista.innerHTML += `
                 <div class="receta-card">
@@ -169,15 +179,30 @@
                         <strong>Peso Total: ${r.peso}g</strong><br>
                         ${r.desglose}
                     </div>
-                    <button onclick="borrar(${i})" style="color:red; border:none; background:none; cursor:pointer; font-size:10px;">Eliminar</button>
+                    <div style="text-align:right; margin-top:5px;">
+                        <button onclick="borrar(${i})" style="color:red; border:none; background:none; cursor:pointer; font-size:11px;">Eliminar ✕</button>
+                    </div>
                 </div>`;
         });
     }
 
     function borrar(i) {
-        recetas.splice(i, 1);
-        localStorage.setItem('recetas_final_v4', JSON.stringify(recetas));
-        dibujarRecetas();
+        if (confirm("¿Borrar esta receta?")) {
+            recetas.splice(i, 1);
+            localStorage.setItem('recetas_final_v4', JSON.stringify(recetas));
+            dibujarRecetas();
+        }
+    }
+
+    function exportarRecetas() {
+        if (recetas.length === 0) return alert("No hay recetas para respaldar.");
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recetas));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "respaldo_recetas_lunavia.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
     }
 
     window.onload = dibujarRecetas;
