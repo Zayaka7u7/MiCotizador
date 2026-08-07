@@ -115,7 +115,7 @@
     function enviarACalculadora(i) {
         const r = recetas[i];
         localStorage.setItem('receta_transferida', JSON.stringify(r));
-        alert(`✨ ${r.nombre} enviada a la Calculadora. ¡Abriendo calculadora!`);
+        alert(`✨ ${r.nombre} enviada a la Calculadora.`);
         window.location.href = "calculadora.html";
     }
 
