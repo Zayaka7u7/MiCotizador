@@ -12,13 +12,14 @@
         .selector-material { background: #4b0082; padding: 15px; border-radius: 15px; color: white; margin-bottom: 15px; }
         label { font-weight: bold; font-size: 12px; display: block; margin-top: 8px; }
         input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; }
-        .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; color: white; }
-        .btn-save { background: #4caf50; }
-        .btn-backup { background: #607d8b; font-size: 11px; margin-top: 15px; }
+        .btn { padding: 10px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-save { background: #4caf50; width: 100%; margin-top: 10px; }
+        .btn-calc-lote { background: #ff9800; padding: 5px 10px; font-size: 12px; }
+        .btn-enviar-calc { background: #9c27b0; padding: 8px 12px; font-size: 12px; margin-top: 8px; width: 100%; }
         .resultado-box { background: #fff; padding: 15px; border-radius: 12px; margin-top: 10px; border: 2px dashed #9c27b0; }
         .receta-card { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 12px; margin-top: 10px; border-left: 5px solid #9c27b0; }
         .badge-desglose { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 8px; font-size: 12px; border: 1px solid #eee; line-height: 1.6; }
-        h4 { margin: 5px 0; color: #4b0082; }
+        .calculo-lote { background: #fff8e1; border: 1px solid #ffe0b2; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 12px; display: none; }
     </style>
 </head>
 <body>
@@ -26,7 +27,6 @@
 <div class="contenedor">
     <h2>✨ Recetario Producción</h2>
 
-    <!-- SELECTOR DE MATERIAL -->
     <div class="selector-material">
         <label style="color: white;">💎 Material a trabajar:</label>
         <select id="tipoMaterial" onchange="limpiarYCalcular()">
@@ -36,70 +36,48 @@
         </select>
     </div>
 
-    <!-- 1. CÁLCULO POR MOLDE (AGUA) -->
+    <!-- CÁLCULO POR MOLDE -->
     <div class="seccion" style="background: #e1f5fe; border-color: #b3e5fc;">
         <h4>💧 1. Cálculo por Molde</h4>
         <div style="display: flex; gap: 5px;">
-            <div style="flex:1;">
-                <label>Molde con agua (g):</label>
-                <input type="number" id="moldeAgua" placeholder="0" oninput="calcularPorAgua()">
-            </div>
-            <div style="flex:1;">
-                <label>Molde vacío (g):</label>
-                <input type="number" id="moldeVacio" placeholder="0" oninput="calcularPorAgua()">
-            </div>
+            <div style="flex:1;"><label>Molde con agua (g):</label><input type="number" id="moldeAgua" placeholder="0" oninput="calcularPorAgua()"></div>
+            <div style="flex:1;"><label>Molde vacío (g):</label><input type="number" id="moldeVacio" placeholder="0" oninput="calcularPorAgua()"></div>
         </div>
     </div>
 
-    <!-- 2. CALCULADORA DE MEZCLA -->
+    <!-- CALCULADORA DE MEZCLA -->
     <div class="seccion">
         <h4>🧪 2. Desglose de Mezcla</h4>
-        <label>Peso total deseado (g):</label>
+        <label>Peso total por pieza (g):</label>
         <input type="number" id="pesoTotal" placeholder="Ej. 200" oninput="calcularMezcla()">
-        
-        <div class="resultado-box" id="resultadoCalculo">
-            Esperando datos...
-        </div>
+        <div class="resultado-box" id="resultadoCalculo">Esperando datos...</div>
     </div>
 
-    <!-- 3. GUARDAR RECETA -->
+    <!-- GUARDAR RECETA -->
     <div class="seccion" style="background: #e8f5e9; border-color: #c8e6c9;">
         <h4>📝 3. Guardar en Bitácora</h4>
         <input type="text" id="nombreReceta" placeholder="Nombre de la pieza">
-        <input type="text" id="notas" placeholder="Aroma, color o marca del material">
+        <input type="text" id="notas" placeholder="Aroma, color o marca">
         <button class="btn btn-save" onclick="guardarReceta()">💾 Guardar Receta</button>
     </div>
 
-    <!-- LISTADO Y RESPALDO -->
     <div id="listaRecetas"></div>
-    
-    <button class="btn btn-backup" onclick="exportarRecetas()">📥 Descargar Respaldo de Recetas</button>
-
-    <div style="text-align:center; margin-top:20px;">
-        <a href="index.html" style="color:#9c27b0; text-decoration:none; font-weight:bold; font-size:13px;">⬅ Menú Principal</a>
-    </div>
+    <div style="text-align:center; margin-top:20px;"><a href="index.html" style="color:#9c27b0; text-decoration:none; font-weight:bold; font-size:13px;">⬅ Menú Principal</a></div>
 </div>
 
 <script>
-    let recetas = JSON.parse(localStorage.getItem('recetas_final_v4')) || [];
-    let textoDesgloseGlobal = "";
+    let recetas = JSON.parse(localStorage.getItem('recetas_final_v5')) || [];
+    let valoresActuales = {};
 
-    function limpiarYCalcular() {
-        document.getElementById('pesoTotal').value = "";
-        calcularMezcla();
-    }
+    function limpiarYCalcular() { document.getElementById('pesoTotal').value = ""; calcularMezcla(); }
 
     function calcularPorAgua() {
         const agua = parseFloat(document.getElementById('moldeAgua').value) || 0;
         const vacio = parseFloat(document.getElementById('moldeVacio').value) || 0;
         const mat = document.getElementById('tipoMaterial').value;
         const neto = agua - vacio;
-        
         if (neto > 0) {
-            let factor = 0.90; // Vela
-            if (mat === 'yeso') factor = 1.50;
-            if (mat === 'resina') factor = 1.10;
-            
+            let factor = (mat === 'vela') ? 0.90 : (mat === 'yeso' ? 1.50 : 1.10);
             document.getElementById('pesoTotal').value = (neto * factor).toFixed(1);
             calcularMezcla();
         }
@@ -109,103 +87,77 @@
         const total = parseFloat(document.getElementById('pesoTotal').value) || 0;
         const mat = document.getElementById('tipoMaterial').value;
         const resBox = document.getElementById('resultadoCalculo');
-        textoDesgloseGlobal = "";
-
-        if (total <= 0) {
-            resBox.innerText = "Ingresa un peso para desglosar.";
-            return;
-        }
+        
+        if (total <= 0) { resBox.innerText = "Ingresa un peso..."; return; }
 
         if (mat === 'vela') {
-            const esencia = total * 0.10; // 10% esencia
-            const base = total - esencia;
-            const estearina = base * 0.10; // 10% estearina de la base
-            const ceraPura = base - estearina;
-            
-            // Sugerencia opcional del 1% de aditivo Olimpia
-            const olimpiaSugerido = base * 0.01;
-            
-            textoDesgloseGlobal = `• Cera: ${ceraPura.toFixed(1)}g<br>• Estearina: ${estearina.toFixed(1)}g<br>• Esencia: ${esencia.toFixed(1)}g<br><span style="color:#7b1fa2; font-size:11px; font-weight:bold;">✨ Opcional - Aditivo Olimpia (1%): ${olimpiaSugerido.toFixed(1)}g</span>`;
-        } 
-        else if (mat === 'yeso') {
-            const agua = total * 0.30; // 30% agua
-            const solido = total - agua;
-            const resistol = total * 0.05; // 5% resistol
-            const yesoPuro = solido - resistol;
-
-            textoDesgloseGlobal = `• Yeso: ${yesoPuro.toFixed(1)}g<br>• Agua: ${agua.toFixed(1)}g<br>• Resistol: ${resistol.toFixed(1)}g`;
+            const e = total * 0.10; const b = total - e; const es = b * 0.10; const c = b - es; const o = b * 0.01;
+            valoresActuales = { cera: c, estearina: es, esencia: e, olimpia: o };
+            resBox.innerHTML = `• Cera: ${c.toFixed(1)}g<br>• Estearina: ${es.toFixed(1)}g<br>• Esencia: ${e.toFixed(1)}g<br><span style="color:#7b1fa2; font-weight:bold;">✨ Aditivo Olimpia: ${o.toFixed(1)}g</span>`;
+        } else if (mat === 'yeso') {
+            const a = total * 0.30; const r = total * 0.05; const y = total - a - r;
+            valoresActuales = { yeso: y, agua: a, resistol: r };
+            resBox.innerHTML = `• Yeso: ${y.toFixed(1)}g<br>• Agua: ${a.toFixed(1)}g<br>• Resistol: ${r.toFixed(1)}g`;
+        } else {
+            valoresActuales = { compA: total * 0.60, compB: total * 0.40 };
+            resBox.innerHTML = `• Comp. A: ${valoresActuales.compA.toFixed(1)}g<br>• Comp. B: ${valoresActuales.compB.toFixed(1)}g`;
         }
-        else if (mat === 'resina') {
-            const compA = total * 0.60;
-            const compB = total * 0.40;
-            textoDesgloseGlobal = `• Componente A: ${compA.toFixed(1)}g<br>• Componente B: ${compB.toFixed(1)}g`;
-        }
-
-        resBox.innerHTML = `<strong>Desglose para ${total}g:</strong><br>${textoDesgloseGlobal}`;
     }
 
     function guardarReceta() {
         const nombre = document.getElementById('nombreReceta').value;
-        const mat = document.getElementById('tipoMaterial').value;
-        if (!nombre) return alert("⚠️ Ponle nombre a la pieza");
-
-        recetas.push({
-            nombre,
-            material: mat.toUpperCase(),
-            notes: document.getElementById('notas').value,
-            peso: document.getElementById('pesoTotal').value,
-            desglose: textoDesgloseGlobal
-        });
-
-        localStorage.setItem('recetas_final_v4', JSON.stringify(recetas));
-        document.getElementById('nombreReceta').value = "";
+        if (!nombre) return alert("Ponle nombre");
+        recetas.push({ nombre, mat: document.getElementById('tipoMaterial').value, notas: document.getElementById('notas').value, peso: document.getElementById('pesoTotal').value, valores: valoresActuales });
+        localStorage.setItem('recetas_final_v5', JSON.stringify(recetas));
         dibujarRecetas();
+    }
+
+    function enviarACalculadora(i) {
+        const r = recetas[i];
+        localStorage.setItem('receta_transferida', JSON.stringify(r));
+        alert(`✨ ${r.nombre} enviada a la Calculadora. ¡Abriendo calculadora!`);
+        window.location.href = "calculadora.html";
     }
 
     function dibujarRecetas() {
         const lista = document.getElementById('listaRecetas');
         lista.innerHTML = "<h3>📚 Mis Piezas Guardadas</h3>";
-        
-        if (recetas.length === 0) {
-            lista.innerHTML += "<p style='color:#888; font-size:12px;'>Aún no tienes piezas guardadas.</p>";
-        }
-
         recetas.forEach((r, i) => {
+            let htmlValores = "";
+            for (const key in r.valores) htmlValores += `• ${key.charAt(0).toUpperCase() + key.slice(1)}: ${r.valores[key].toFixed(1)}g<br>`;
+            
             lista.innerHTML += `
                 <div class="receta-card">
-                    <strong>${r.nombre}</strong> (${r.material})<br>
-                    <small>${r.notes || ''}</small>
-                    <div class="badge-desglose">
-                        <strong>Peso Total: ${r.peso}g</strong><br>
-                        ${r.desglose}
+                    <strong>${r.nombre}</strong> (${r.mat})<br>
+                    <div class="badge-desglose"><strong>Peso pieza: ${r.peso}g</strong><br>${htmlValores}</div>
+                    
+                    <button class="btn btn-enviar-calc" onclick="enviarACalculadora(${i})">💰 Enviar a Calculadora</button>
+
+                    <div style="margin-top:10px;">
+                        <input type="number" id="n-${i}" placeholder="¿Cuántas piezas?" style="width:40%; padding:5px;">
+                        <button class="btn btn-calc-lote" onclick="calcularLote(${i})">Calcular Lote</button>
                     </div>
-                    <div style="text-align:right; margin-top:5px;">
-                        <button onclick="borrar(${i})" style="color:red; border:none; background:none; cursor:pointer; font-size:11px;">Eliminar ✕</button>
-                    </div>
+                    <div id="resultado-lote-${i}" class="calculo-lote"></div>
+                    <button onclick="borrar(${i})" style="color:red; background:none; border:none; margin-top:10px; cursor:pointer; font-size:10px;">Eliminar Receta</button>
                 </div>`;
         });
     }
 
-    function borrar(i) {
-        if (confirm("¿Borrar esta receta?")) {
-            recetas.splice(i, 1);
-            localStorage.setItem('recetas_final_v4', JSON.stringify(recetas));
-            dibujarRecetas();
-        }
+    function calcularLote(i) {
+        const n = parseFloat(document.getElementById(`n-${i}`).value);
+        if (!n || n <= 0) return alert("Pon cantidad válida");
+        const r = recetas[i];
+        let totalHtml = `<strong>Total para ${n} piezas:</strong><br>`;
+        for (const key in r.valores) totalHtml += `• ${key}: ${(r.valores[key] * n).toFixed(1)}g<br>`;
+        const div = document.getElementById(`resultado-lote-${i}`);
+        div.innerHTML = totalHtml;
+        div.style.display = "block";
     }
 
-    function exportarRecetas() {
-        if (recetas.length === 0) return alert("No hay recetas para respaldar.");
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recetas));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "respaldo_recetas_lunavia.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
-
+    function borrar(i) { if(confirm("¿Borrar?")) { recetas.splice(i, 1); localStorage.setItem('recetas_final_v5', JSON.stringify(recetas)); dibujarRecetas(); } }
     window.onload = dibujarRecetas;
 </script>
 </body>
 </html>
+
+   
