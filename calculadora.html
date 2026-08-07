@@ -13,7 +13,8 @@
         input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 10px; }
         
-        .alerta-receta { background: #e1bee7; color: #4b0082; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-bottom: 15px; text-align: center; display: none; }
+        .alerta-receta { background: #e1bee7; color: #4b0082; padding: 12px; border-radius: 12px; font-size: 12px; margin-bottom: 15px; display: none; }
+        .fila-material { background: #fff; border: 1px solid #e1bee7; padding: 8px; border-radius: 8px; margin-top: 6px; font-size: 12px; }
         
         /* TikTok Shop */
         .tt-container { background: #000; color: #fff; padding: 15px; border-radius: 20px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
@@ -27,9 +28,14 @@
     <div class="contenedor">
         <h2>🧮 Calculadora de Producción</h2>
 
-        <div id="alertaReceta" class="alerta-receta"></div>
+        <!-- ÁREA DE RECETA AUTO-CARGADA -->
+        <div id="alertaReceta" class="alerta-receta">
+            <strong id="tituloRecetaCargada"></strong>
+            <p style="margin: 5px 0 10px 0; font-size: 11px;">Elige qué material base usaste para cada ingrediente de la receta:</p>
+            <div id="listaMaterialesReceta"></div>
+        </div>
 
-        <!-- 1. REGISTRO DE MATERIALES -->
+        <!-- REGISTRO DE INSUMOS BASE -->
         <div class="seccion">
             <strong>📦 Registrar Insumo Base</strong>
             <div style="display: flex; gap: 5px;">
@@ -57,32 +63,21 @@
             <button class="btn" style="background: #9c27b0;" onclick="guardarInsumo()">💾 Guardar Insumo Base</button>
         </div>
 
-        <!-- 2. CÁLCULO DE PIEZA -->
+        <!-- SUMAR GASTOS EXTRA -->
         <div class="seccion" style="background: #fff3e0;">
-            <strong>🧪 Sumar Insumo Registrado</strong>
-            <select id="selectInsumo" onchange="document.getElementById('usoCant').focus()"></select>
-            <div style="display: flex; gap: 5px; margin-top: 10px;">
-                <input type="number" id="usoCant" placeholder="¿Cuánto usaste?">
-                <button class="btn" style="background: #ff9800; margin-top: 4px;" onclick="sumarPieza()">➕ Sumar</button>
-            </div>
-
-            <hr style="border:0; border-top: 1px solid #ffe0b2; margin: 15px 0;">
-
-            <!-- OBJETOS O GASTOS EXTRA -->
             <strong>➕ Sumar Objeto / Gasto Extra Aparte</strong>
             <div style="display: flex; gap: 5px;">
                 <input type="text" id="nombreExtra" placeholder="Ej. Frasco, Mecha, Caja" style="flex:1;">
                 <input type="number" id="costoExtra" placeholder="Costo $" style="width: 100px;">
                 <button class="btn" style="background: #009688; margin-top: 4px; width: 80px;" onclick="sumarExtra()">➕ Add</button>
             </div>
-
-            <div id="resumen" style="font-size: 12px; margin-top: 10px; color: #555;"></div>
+            <div id="resumenExtras" style="font-size: 12px; margin-top: 10px; color: #555;"></div>
         </div>
 
-        <!-- 3. RESULTADOS Y REDONDEO -->
+        <!-- RESULTADOS -->
         <div class="seccion">
             <label>Ganancia deseada (%):</label>
-            <input type="number" id="porcGanancia" value="50" oninput="calcularVenta()">
+            <input type="number" id="porcGanancia" value="50" oninput="calcularVentaTotal()">
             
             <div style="margin-top: 15px; font-size: 14px;">
                 Costo Producción: <strong>$<span id="totalProduccion">0.00</span></strong><br>
@@ -100,7 +95,7 @@
             </button>
         </div>
 
-        <!-- 4. SIMULADOR TIKTOK SHOP -->
+        <!-- SIMULADOR TIKTOK SHOP -->
         <div class="tt-container">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 24px;">🖤</span>
@@ -128,7 +123,9 @@
     </div>
 
     <script>
-        let acumulado = 0;
+        let costoRecetaBase = 0;
+        let costoExtras = 0;
+        let recetaCargada = null;
 
         function obtenerInsumos() { return JSON.parse(localStorage.getItem('insumos_v3')) || []; }
 
@@ -152,52 +149,88 @@
             localStorage.setItem('insumos_v3', JSON.stringify(lista));
             document.getElementById('nombreMat').value = "";
             dibujarTodo();
+            verificarRecetaTransferida();
         }
 
         function dibujarTodo() {
             const div = document.getElementById('lista-insumos');
-            const sel = document.getElementById('selectInsumo');
             const lista = obtenerInsumos();
             div.innerHTML = "<strong>📦 Mis Insumos Base Registrados:</strong><br>";
-            sel.innerHTML = '<option value="">-- Elige Material --</option>';
             lista.forEach((item, i) => {
                 div.innerHTML += `<div class="item-lista">
                     <span>${item.nombre} ($${item.precio.toFixed(3)} / ${item.unidad})</span>
-                    <button onclick="borrar(${i})" style="color:red; border:none; background:none;">X</button>
+                    <button onclick="borrarInsumo(${i})" style="color:red; border:none; background:none;">X</button>
                 </div>`;
-                let opt = document.createElement("option");
-                opt.value = i; opt.text = item.nombre; sel.add(opt);
             });
         }
 
-        function borrar(i) {
+        function borrarInsumo(i) {
             let lista = obtenerInsumos();
             lista.splice(i, 1);
             localStorage.setItem('insumos_v3', JSON.stringify(lista));
             dibujarTodo();
+            verificarRecetaTransferida();
         }
 
-        function sumarPieza() {
-            const i = document.getElementById('selectInsumo').value;
-            const cant = parseFloat(document.getElementById('usoCant').value) || 0;
-            const lista = obtenerInsumos();
-            if(i !== "" && cant > 0) {
-                const ins = lista[i];
-                const costoItem = ins.precio * cant;
-                acumulado += costoItem;
-                document.getElementById('resumen').innerHTML += `<div>• ${ins.nombre} (${cant}${ins.unidad}): $${costoItem.toFixed(2)}</div>`;
-                calcularVenta();
-                document.getElementById('usoCant').value = "";
+        function verificarRecetaTransferida() {
+            recetaCargada = JSON.parse(localStorage.getItem('receta_transferida'));
+            const alerta = document.getElementById('alertaReceta');
+            const contenedor = document.getElementById('listaMaterialesReceta');
+            const listaInsumos = obtenerInsumos();
+
+            if (recetaCargada) {
+                alerta.style.display = "block";
+                document.getElementById('tituloRecetaCargada').innerText = `🕯️ Receta: ${recetaCargada.nombre} (${recetaCargada.peso}g)`;
+                document.getElementById('nombreProdFinal').value = recetaCargada.nombre;
+                contenedor.innerHTML = "";
+
+                // Genera un selector por cada ingrediente que trae la receta
+                for (const key in recetaCargada.valores) {
+                    const gramos = recetaCargada.valores[key];
+                    if(gramos <= 0) continue;
+
+                    let options = '<option value="">-- Selecciona Insumo Registrado --</option>';
+                    listaInsumos.forEach((ins, idx) => {
+                        options += `<option value="${idx}">${ins.nombre} ($${ins.precio.toFixed(3)}/${ins.unidad})</option>`;
+                    });
+
+                    contenedor.innerHTML += `
+                        <div class="fila-material">
+                            <strong>${key.toUpperCase()} (${gramos.toFixed(1)}g):</strong>
+                            <select onchange="recalcularCostoReceta()" class="select-receta-ing" data-gramos="${gramos}">
+                                ${options}
+                            </select>
+                        </div>`;
+                }
+            } else {
+                alerta.style.display = "none";
             }
+        }
+
+        function recalcularCostoReceta() {
+            const selects = document.querySelectorAll('.select-receta-ing');
+            const listaInsumos = obtenerInsumos();
+            costoRecetaBase = 0;
+
+            selects.forEach(sel => {
+                const idx = sel.value;
+                const gramos = parseFloat(sel.getAttribute('data-gramos')) || 0;
+                if (idx !== "") {
+                    const ins = listaInsumos[idx];
+                    costoRecetaBase += (ins.precio * gramos);
+                }
+            });
+
+            calcularVentaTotal();
         }
 
         function sumarExtra() {
             const nomExtra = document.getElementById('nombreExtra').value.trim();
             const cosExtra = parseFloat(document.getElementById('costoExtra').value) || 0;
             if (nomExtra !== "" && cosExtra > 0) {
-                acumulado += cosExtra;
-                document.getElementById('resumen').innerHTML += `<div>• 📦 Extra (${nomExtra}): $${cosExtra.toFixed(2)}</div>`;
-                calcularVenta();
+                costoExtras += cosExtra;
+                document.getElementById('resumenExtras').innerHTML += `<div>• 📦 Extra (${nomExtra}): $${cosExtra.toFixed(2)}</div>`;
+                calcularVentaTotal();
                 document.getElementById('nombreExtra').value = "";
                 document.getElementById('costoExtra').value = "";
             } else {
@@ -205,12 +238,14 @@
             }
         }
 
-        function calcularVenta() {
+        function calcularVentaTotal() {
+            const totalCosto = costoRecetaBase + costoExtras;
             const porc = parseFloat(document.getElementById('porcGanancia').value) || 0;
-            const venta = acumulado + (acumulado * (porc / 100));
-            document.getElementById('totalProduccion').innerText = acumulado.toFixed(2);
+            const venta = totalCosto + (totalCosto * (porc / 100));
+
+            document.getElementById('totalProduccion').innerText = totalCosto.toFixed(2);
             document.getElementById('totalVentaCalculado').innerText = venta.toFixed(2);
-            document.getElementById('precioFinalRedondeado').value = Math.ceil(venta); // Sugerencia redondeada
+            document.getElementById('precioFinalRedondeado').value = Math.ceil(venta);
         }
 
         function calcularTikTokIndependiente() {
@@ -223,8 +258,9 @@
 
         function resetearCalculoActual() {
             if(confirm("¿Segura que quieres borrar el cálculo actual?")) {
-                acumulado = 0;
-                document.getElementById('resumen').innerHTML = "";
+                costoRecetaBase = 0;
+                costoExtras = 0;
+                document.getElementById('resumenExtras').innerHTML = "";
                 document.getElementById('totalProduccion').innerText = "0.00";
                 document.getElementById('totalVentaCalculado').innerText = "0.00";
                 document.getElementById('precioFinalRedondeado').value = "";
@@ -244,16 +280,6 @@
             alert("✨ ¡Guardado para Cotizador!");
             localStorage.removeItem('receta_transferida');
             location.reload(); 
-        }
-
-        function verificarRecetaTransferida() {
-            const receta = JSON.parse(localStorage.getItem('receta_transferida'));
-            if (receta) {
-                const alerta = document.getElementById('alertaReceta');
-                alerta.style.display = "block";
-                alerta.innerHTML = `📥 Cargarás la receta: <strong>${receta.nombre}</strong> (${receta.peso}g)`;
-                document.getElementById('nombreProdFinal').value = receta.nombre;
-            }
         }
 
         window.onload = function() {
