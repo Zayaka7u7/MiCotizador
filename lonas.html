@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador de Lonas 🖼️</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 15px; color: #333; }
+        .contenedor { max-width: 450px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #1976d2; margin-top: 0; }
+        .seccion { background: #e3f2fd; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #bbdefb; }
+        label { font-weight: bold; font-size: 12px; display: block; margin-top: 10px; }
+        input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; }
+        .resultado-box { background: #fff; padding: 15px; border-radius: 12px; margin-top: 15px; border: 2px dashed #1976d2; }
+        .precio-final { color: #2e7d32; font-size: 22px; font-weight: bold; }
+        .m2-badge { background: #1976d2; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; display: inline-block; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h2>🖼️ Cotizador de Lonas</h2>
+
+    <div class="seccion">
+        <strong>📐 Dimensiones y Unidad</strong>
+        
+        <label>Unidad de medida:</label>
+        <select id="unidad" onchange="calcularLona()">
+            <option value="m">Metros (m)</option>
+            <option value="cm">Centímetros (cm)</option>
+        </select>
+
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label>Ancho:</label>
+                <input type="number" id="ancho" placeholder="Ej. 1.5" step="0.01" oninput="calcularLona()">
+            </div>
+            <div style="flex: 1;">
+                <label>Alto:</label>
+                <input type="number" id="alto" placeholder="Ej. 2" step="0.01" oninput="calcularLona()">
+            </div>
+        </div>
+    </div>
+
+    <div class="seccion" style="background: #fff3e0; border-color: #ffe0b2;">
+        <strong>💰 Costos y Ganancia</strong>
+        
+        <label>Costo por $m^2$ ($):</label>
+        <input type="number" id="costoM2" value="55" step="0.1" oninput="calcularLona()">
+
+        <label>% Ganancia deseada:</label>
+        <input type="number" id="porcGanancia" value="40" oninput="calcularLona()">
+    </div>
+
+    <div class="resultado-box" id="resultado">
+        Ingresa las medidas para ver la cotización...
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+        <a href="index.html" style="color:#1976d2; text-decoration:none; font-weight:bold; font-size:13px;">⬅ Volver al Menú Principal</a>
+    </div>
+</div>
+
+<script>
+    function calcularLona() {
+        let ancho = parseFloat(document.getElementById('ancho').value) || 0;
+        let alto = parseFloat(document.getElementById('alto').value) || 0;
+        const unidad = document.getElementById('unidad').value;
+        const costoM2 = parseFloat(document.getElementById('costoM2').value) || 0;
+        const porcGanancia = parseFloat(document.getElementById('porcGanancia').value) || 0;
+
+        // Convertir centímetros a metros si es necesario
+        if (unidad === 'cm') {
+            ancho = ancho / 100;
+            alto = alto / 100;
+        }
+
+        const areaM2 = ancho * alto;
+
+        if (areaM2 > 0) {
+            const costoProduccion = areaM2 * costoM2;
+            const ganancia = costoProduccion * (porcGanancia / 100);
+            const precioVenta = costoProduccion + ganancia;
+
+            document.getElementById('resultado').innerHTML = `
+                <div style="font-size:13px; color:#555;">Área total: <span class="m2-badge">${areaM2.toFixed(2)} m²</span></div>
+                <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+                <div style="font-size:13px;">Costo base: <strong>$${costoProduccion.toFixed(2)}</strong></div>
+                <div style="font-size:13px;">Tu ganancia (${porcGanancia}%): <strong style="color:#2e7d32;">+$${ganancia.toFixed(2)}</strong></div>
+                <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+                <div style="font-size:12px; color:#666;">Precio sugerido al cliente:</div>
+                <div class="precio-final">$${precioVenta.toFixed(2)}</div>
+            `;
+        } else {
+            document.getElementById('resultado').innerText = "Ingresa las medidas para ver la cotización...";
+        }
+    }
+</script>
+
+</body>
+</html>
