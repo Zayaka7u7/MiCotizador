@@ -1,194 +1,419 @@
 <!-- PESTAÑA IMPRESIÓN 3D -->
-<div id="impresion3d" class="tab-content">
-  <h2>🖨️ Calculadora de Impresión 3D</h2>
-  <form id="form3d">
-    <!-- SECCIÓN FILAMENTO -->
-    <fieldset style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-      <legend><strong>🧵 Filamento y Materiales</strong></legend>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 200px;">
-          <label>Marca / Tipo de Filamento:</label>
-          <input type="text" id="3d-marca" placeholder="Ej. Bambu PLA Basic / eSUN" required style="width: 100%;">
-        </div>
-        <div style="flex: 1; min-width: 140px;">
-          <label>Costo del Rollo (1 kg / 1000g):</label>
-          <input type="number" id="3d-costo-rollo" value="350" step="0.01" style="width: 100%;">
-        </div>
-        <div style="flex: 1; min-width: 140px;">
-          <label>Gramos Usados en la Pieza (g):</label>
-          <input type="number" id="3d-gramos" placeholder="Ej. 45" step="0.1" required style="width: 100%;">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Impresión 3D - Lunavia & Usagi</title>
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --primary-hover: #357abd;
+      --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #f3e8ff 100%);
+      --card-bg: #ffffff;
+      --text-color: #2d3748;
+      --accent-green: #2e7d32;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 750px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #f0f4f8;
+      padding-bottom: 15px;
+    }
+
+    .btn-volver {
+      text-decoration: none;
+      color: var(--primary-color);
+      background: #eff6ff;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-volver:hover {
+      background: #dbeafe;
+      transform: translateX(-2px);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .grid-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+    }
+
+    .btn-calcular {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn-calcular:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
+
+    /* RESULTADOS */
+    .results-card {
+      display: none;
+      margin-top: 25px;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .results-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 15px 0;
+    }
+
+    .results-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed #e2e8f0;
+      font-size: 0.95rem;
+    }
+
+    .results-list .total-row {
+      border-bottom: none;
+      border-top: 2px solid #cbd5e1;
+      margin-top: 10px;
+      padding-top: 12px;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .price-tag {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .price-tag span {
+      display: block;
+      font-size: 0.85rem;
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .price-tag strong {
+      font-size: 1.8rem;
+      color: #15803d;
+    }
+
+    .btn-cotizador {
+      width: 100%;
+      padding: 12px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-cotizador:hover {
+      background: #059669;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <a href="index.html" class="btn-volver">← Volver al Panel</a>
+      <h1>🖨️ Impresión 3D</h1>
+    </div>
+
+    <form id="form3d">
+      <!-- FILAMENTO -->
+      <div class="card">
+        <div class="card-title">🧵 Filamento y Materiales</div>
+        <div class="grid-fields">
+          <div class="field-group" style="grid-column: span 2;">
+            <label>Marca / Material</label>
+            <input type="text" id="3d-marca" placeholder="Ej. Bambu PLA Basic / eSUN PLA+" required>
+          </div>
+          <div class="field-group">
+            <label>Costo del Rollo ($)</label>
+            <input type="number" id="3d-costo-rollo" value="350" step="0.01">
+          </div>
+          <div class="field-group">
+            <label>Gramos Usados (g)</label>
+            <input type="number" id="3d-gramos" placeholder="Ej. 45" step="0.1" required>
+          </div>
         </div>
       </div>
-    </fieldset>
 
-    <!-- SECCIÓN TIEMPO Y ENERGÍA -->
-    <fieldset style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-      <legend><strong>⚡ Tiempo y Consumo Eléctrico</strong></legend>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 120px;">
-          <label>Horas de Impresión:</label>
-          <input type="number" id="3d-horas" value="0" min="0" style="width: 100%;">
-        </div>
-        <div style="flex: 1; min-width: 120px;">
-          <label>Minutos:</label>
-          <input type="number" id="3d-minutos" value="0" min="0" max="59" style="width: 100%;">
-        </div>
-        <div style="flex: 1; min-width: 140px;">
-          <label>Tarifa Luz ($/kWh):</label>
-          <input type="number" id="3d-tarifa-kwh" value="2.00" step="0.10" style="width: 100%;">
-        </div>
-        <div style="flex: 1; min-width: 140px;">
-          <label>Potencia Impresora (Watts):</label>
-          <input type="number" id="3d-watts" value="180" step="10" style="width: 100%;">
+      <!-- TIEMPO Y ENERGÍA -->
+      <div class="card">
+        <div class="card-title">⚡ Tiempo y Consumo Eléctrico</div>
+        <div class="grid-fields">
+          <div class="field-group">
+            <label>Horas</label>
+            <input type="number" id="3d-horas" value="0" min="0">
+          </div>
+          <div class="field-group">
+            <label>Minutos</label>
+            <input type="number" id="3d-minutos" value="0" min="0" max="59">
+          </div>
+          <div class="field-group">
+            <label>Tarifa ($/kWh)</label>
+            <input type="number" id="3d-tarifa-kwh" value="2.00" step="0.10">
+          </div>
+          <div class="field-group">
+            <label>Consumo (Watts)</label>
+            <input type="number" id="3d-watts" value="180" step="10">
+          </div>
         </div>
       </div>
-    </fieldset>
 
-    <!-- SECCIÓN ADITAMENTOS Y HERRAJES -->
-    <fieldset style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-      <legend><strong>🧩 Aditamentos y Extras</strong></legend>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 200px;">
-          <label>Tipo de Aditamento:</label>
-          <select id="3d-aditamento-tipo" style="width: 100%;">
-            <option value="ninguno">Ninguno ($0.00)</option>
-            <option value="llavero_normal">Llavero Normal (Argolla + Cadenita)</option>
-            <option value="clicker">Mecanismo Clicker (Muelle/Resorte)</option>
-            <option value="iman">Imán de Neodimio</option>
-            <option value="otro">Otro aditamento personalizado</option>
-          </select>
-        </div>
-        <div style="flex: 1; min-width: 140px;">
-          <label>Costo Aditamento ($):</label>
-          <input type="number" id="3d-aditamento-costo" value="0.00" step="0.50" style="width: 100%;">
-        </div>
-      </div>
-    </fieldset>
-
-    <!-- SECCIÓN DESGASTE Y MARGEN DE ERROR -->
-    <fieldset style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-      <legend><strong>🛡️ Desgaste y Margen de Fallo</strong></legend>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 150px;">
-          <label>Desgaste Máquina ($/hora):</label>
-          <input type="number" id="3d-desgaste-hora" value="2.50" step="0.50" style="width: 100%;">
-        </div>
-        <div style="flex: 1; min-width: 150px;">
-          <label>Margen por Fallas/Pruebas (%):</label>
-          <input type="number" id="3d-margen-fallas" value="5" step="1" style="width: 100%;">
-        </div>
-        <div style="flex: 1; min-width: 150px;">
-          <label>Porcentaje de Ganancia (%):</label>
-          <input type="number" id="3d-ganancia" value="100" step="5" style="width: 100%;">
+      <!-- ADITAMENTOS -->
+      <div class="card">
+        <div class="card-title">🧩 Aditamentos y Extras</div>
+        <div class="grid-fields">
+          <div class="field-group" style="grid-column: span 2;">
+            <label>Tipo de Herraje / Aditamento</label>
+            <select id="3d-aditamento-tipo">
+              <option value="ninguno">Ninguno ($0.00)</option>
+              <option value="llavero_normal">Llavero Normal ($3.50)</option>
+              <option value="clicker">Mecanismo Clicker ($5.00)</option>
+              <option value="iman">Imán de Neodimio ($4.00)</option>
+              <option value="otro">Otro aditamento personalizado</option>
+            </select>
+          </div>
+          <div class="field-group" style="grid-column: span 2;">
+            <label>Costo Aditamento ($)</label>
+            <input type="number" id="3d-aditamento-costo" value="0.00" step="0.50">
+          </div>
         </div>
       </div>
-    </fieldset>
 
-    <button type="button" onclick="calcularCosto3D()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Calcular Impresión</button>
-  </form>
+      <!-- MARGENES -->
+      <div class="card">
+        <div class="card-title">🛡️ Mantenimiento y Ganancia</div>
+        <div class="grid-fields">
+          <div class="field-group">
+            <label>Desgaste ($/hora)</label>
+            <input type="number" id="3d-desgaste-hora" value="2.50" step="0.50">
+          </div>
+          <div class="field-group">
+            <label>Margen Fallas (%)</label>
+            <input type="number" id="3d-margen-fallas" value="5" step="1">
+          </div>
+          <div class="field-group" style="grid-column: span 2;">
+            <label>% Ganancia Deseada</label>
+            <input type="number" id="3d-ganancia" value="100" step="5">
+          </div>
+        </div>
+      </div>
 
-  <!-- RESULTADOS -->
-  <div id="resultado3d" style="margin-top: 20px; display: none; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd;">
-    <h3>📊 Desglose de Costos</h3>
-    <ul style="line-height: 1.8;">
-      <li><strong>Costo Filamento:</strong> $<span id="res-costo-filamento">0.00</span> MXN</li>
-      <li><strong>Costo Luz (Energía):</strong> $<span id="res-costo-luz">0.00</span> MXN</li>
-      <li><strong>Costo Aditamento:</strong> $<span id="res-costo-aditamento">0.00</span> MXN</li>
-      <li><strong>Desgaste de Impresora:</strong> $<span id="res-desgaste">0.00</span> MXN</li>
-      <li><strong>Margen de Fallo:</strong> $<span id="res-fallas">0.00</span> MXN</li>
-      <hr>
-      <li><strong>COSTO DIRECTO DE PRODUCCIÓN:</strong> $<span id="res-costo-total-prod">0.00</span> MXN</li>
-      <li style="font-size: 1.2em; color: #2e7d32;"><strong>💰 PRECIO SUGERIDO DE VENTA:</strong> $<span id="res-precio-venta">0.00</span> MXN</li>
-      <li style="color: #1565c0;"><strong>Ganancia Neta:</strong> $<span id="res-ganancia-neta">0.00</span> MXN</li>
-    </ul>
+      <button type="button" class="btn-calcular" onclick="calcularCosto3D()">Calcular Cotización</button>
+    </form>
 
-    <button type="button" onclick="guardarYEnviarACotizador3D()" style="padding: 10px 20px; background-color: #2196F6; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;">🛒 Agregar al Cotizador General</button>
+    <!-- RESULTADOS -->
+    <div id="resultado3d" class="results-card">
+      <h3 style="margin-top:0; color: #1e293b;">📊 Desglose de Costos</h3>
+      <ul class="results-list">
+        <li><span>🧵 Filamento:</span> <span>$<span id="res-costo-filamento">0.00</span> MXN</span></li>
+        <li><span>⚡ Energía Eléctrica:</span> <span>$<span id="res-costo-luz">0.00</span> MXN</span></li>
+        <li><span>🧩 Aditamento:</span> <span>$<span id="res-costo-aditamento">0.00</span> MXN</span></li>
+        <li><span>🛠️ Desgaste de Impresora:</span> <span>$<span id="res-desgaste">0.00</span> MXN</span></li>
+        <li><span>⚠️ Margen de Fallo:</span> <span>$<span id="res-fallas">0.00</span> MXN</span></li>
+        <li class="total-row"><span>🏷️ Costo Total Producción:</span> <span>$<span id="res-costo-total-prod">0.00</span> MXN</span></li>
+      </ul>
+
+      <div class="price-tag">
+        <span>PRECIO SUGERIDO DE VENTA</span>
+        <strong>$<span id="res-precio-venta">0.00</span> MXN</strong>
+        <div style="font-size: 0.85rem; color: #1565c0; margin-top: 4px; font-weight: 600;">
+          Ganancia limpia: $<span id="res-ganancia-neta">0.00</span> MXN
+        </div>
+      </div>
+
+      <button type="button" class="btn-cotizador" onclick="guardarYEnviarACotizador3D()">🛒 Guardar / Enviar a Cotizador</button>
+    </div>
   </div>
-</div>
 
-<script>
-// Auto-cambiar costo de aditamento según selección predefinida
-document.getElementById('3d-aditamento-tipo').addEventListener('change', function() {
-  const costoInput = document.getElementById('3d-aditamento-costo');
-  switch(this.value) {
-    case 'llavero_normal': costoInput.value = "3.50"; break;
-    case 'clicker': costoInput.value = "5.00"; break;
-    case 'iman': costoInput.value = "4.00"; break;
-    case 'ninguno': costoInput.value = "0.00"; break;
-  }
-});
+  <script>
+    // Cambio automático de aditamento
+    document.getElementById('3d-aditamento-tipo').addEventListener('change', function() {
+      const costoInput = document.getElementById('3d-aditamento-costo');
+      switch(this.value) {
+        case 'llavero_normal': costoInput.value = "3.50"; break;
+        case 'clicker': costoInput.value = "5.00"; break;
+        case 'iman': costoInput.value = "4.00"; break;
+        case 'ninguno': costoInput.value = "0.00"; break;
+      }
+    });
 
-let ultimoCalculo3D = null;
+    let ultimoCalculo3D = null;
 
-function calcularCosto3D() {
-  const marca = document.getElementById('3d-marca').value || 'Pieza 3D';
-  const costoRollo = parseFloat(document.getElementById('3d-costo-rollo').value) || 0;
-  const gramos = parseFloat(document.getElementById('3d-gramos').value) || 0;
-  
-  const horas = parseFloat(document.getElementById('3d-horas').value) || 0;
-  const minutos = parseFloat(document.getElementById('3d-minutos').value) || 0;
-  const tarifaKwh = parseFloat(document.getElementById('3d-tarifa-kwh').value) || 2.00;
-  const watts = parseFloat(document.getElementById('3d-watts').value) || 180;
-  
-  const costoAditamento = parseFloat(document.getElementById('3d-aditamento-costo').value) || 0;
-  const desgasteHora = parseFloat(document.getElementById('3d-desgaste-hora').value) || 0;
-  const pctFallas = parseFloat(document.getElementById('3d-margen-fallas').value) || 0;
-  const pctGanancia = parseFloat(document.getElementById('3d-ganancia').value) || 0;
+    function calcularCosto3D() {
+      const marca = document.getElementById('3d-marca').value || 'Pieza 3D';
+      const costoRollo = parseFloat(document.getElementById('3d-costo-rollo').value) || 0;
+      const gramos = parseFloat(document.getElementById('3d-gramos').value) || 0;
+      
+      const horas = parseFloat(document.getElementById('3d-horas').value) || 0;
+      const minutos = parseFloat(document.getElementById('3d-minutos').value) || 0;
+      const tarifaKwh = parseFloat(document.getElementById('3d-tarifa-kwh').value) || 2.00;
+      const watts = parseFloat(document.getElementById('3d-watts').value) || 180;
+      
+      const costoAditamento = parseFloat(document.getElementById('3d-aditamento-costo').value) || 0;
+      const desgasteHora = parseFloat(document.getElementById('3d-desgaste-hora').value) || 0;
+      const pctFallas = parseFloat(document.getElementById('3d-margen-fallas').value) || 0;
+      const pctGanancia = parseFloat(document.getElementById('3d-ganancia').value) || 0;
 
-  // 1. Tiempo total en horas
-  const tiempoTotalHoras = horas + (minutos / 60);
+      // 1. Horas totales
+      const tiempoTotalHoras = horas + (minutos / 60);
 
-  // 2. Cálculo de Filamento (Costo por gramo * gramos)
-  const costoGramo = costoRollo / 1000;
-  const costoFilamento = costoGramo * gramos;
+      // 2. Costo Filamento
+      const costoGramo = costoRollo / 1000;
+      const costoFilamento = costoGramo * gramos;
 
-  // 3. Cálculo de Luz (kW * horas * $/kWh)
-  const consumoKw = watts / 1000;
-  const costoLuz = consumoKw * tiempoTotalHoras * tarifaKwh;
+      // 3. Luz
+      const consumoKw = watts / 1000;
+      const costoLuz = consumoKw * tiempoTotalHoras * tarifaKwh;
 
-  // 4. Desgaste de máquina
-  const costoDesgaste = tiempoTotalHoras * desgasteHora;
+      // 4. Desgaste
+      const costoDesgaste = tiempoTotalHoras * desgasteHora;
 
-  // 5. Suma de Subtotal base antes de margen de falla
-  const subtotalBase = costoFilamento + costoLuz + costoAditamento + costoDesgaste;
-  const costoFallas = subtotalBase * (pctFallas / 100);
+      // 5. Subtotal + Fallas
+      const subtotalBase = costoFilamento + costoLuz + costoAditamento + costoDesgaste;
+      const costoFallas = subtotalBase * (pctFallas / 100);
 
-  // 6. Costo Total de Producción
-  const costoTotalProduccion = subtotalBase + costoFallas;
+      // 6. Costo Total
+      const costoTotalProduccion = subtotalBase + costoFallas;
 
-  // 7. Precio de Venta y Ganancia
-  const gananciaNeta = costoTotalProduccion * (pctGanancia / 100);
-  const precioVenta = costoTotalProduccion + gananciaNeta;
+      // 7. Ganancia
+      const gananciaNeta = costoTotalProduccion * (pctGanancia / 100);
+      const precioVenta = costoTotalProduccion + gananciaNeta;
 
-  // Mostrar en Pantalla
-  document.getElementById('res-costo-filamento').innerText = costoFilamento.toFixed(2);
-  document.getElementById('res-costo-luz').innerText = costoLuz.toFixed(2);
-  document.getElementById('res-costo-aditamento').innerText = costoAditamento.toFixed(2);
-  document.getElementById('res-desgaste').innerText = costoDesgaste.toFixed(2);
-  document.getElementById('res-fallas').innerText = costoFallas.toFixed(2);
-  document.getElementById('res-costo-total-prod').innerText = costoTotalProduccion.toFixed(2);
-  document.getElementById('res-precio-venta').innerText = precioVenta.toFixed(2);
-  document.getElementById('res-ganancia-neta').innerText = gananciaNeta.toFixed(2);
+      // Mostrar resultados
+      document.getElementById('res-costo-filamento').innerText = costoFilamento.toFixed(2);
+      document.getElementById('res-costo-luz').innerText = costoLuz.toFixed(2);
+      document.getElementById('res-costo-aditamento').innerText = costoAditamento.toFixed(2);
+      document.getElementById('res-desgaste').innerText = costoDesgaste.toFixed(2);
+      document.getElementById('res-fallas').innerText = costoFallas.toFixed(2);
+      document.getElementById('res-costo-total-prod').innerText = costoTotalProduccion.toFixed(2);
+      document.getElementById('res-precio-venta').innerText = precioVenta.toFixed(2);
+      document.getElementById('res-ganancia-neta').innerText = gananciaNeta.toFixed(2);
 
-  document.getElementById('resultado3d').style.display = 'block';
+      document.getElementById('resultado3d').style.display = 'block';
 
-  // Guardar objeto en memoria para poder mandarlo al Cotizador
-  ultimoCalculo3D = {
-    nombre: `Impresión 3D (${marca} - ${gramos}g)`,
-    costoProduccion: costoTotalProduccion,
-    precioVenta: precioVenta
-  };
-}
+      // Guardar objeto
+      ultimoCalculo3D = {
+        nombre: `Impresión 3D: ${marca} (${gramos}g)`,
+        precio: precioVenta
+      };
+    }
 
-function guardarYEnviarACotizador3D() {
-  if (!ultimoCalculo3D) return;
-  
-  // Aquí invocas la función existente en tu app para agregar items al cotizador/carrito
-  if (typeof agregarAlCotizador === 'function') {
-    agregarAlCotizador(ultimoCalculo3D.nombre, ultimoCalculo3D.precioVenta);
-    alert('✅ ¡Agregado al cotizador general con éxito!');
-  } else {
-    alert(`Item preparado: ${ultimoCalculo3D.nombre} - Precio: $${ultimoCalculo3D.precioVenta.toFixed(2)}`);
-  }
-}
-</script>
+    function guardarYEnviarACotizador3D() {
+      if (!ultimoCalculo3D) return;
+      alert(`✅ ¡Cálculo guardado!\n\nProducto: ${ultimoCalculo3D.nombre}\nPrecio Venta: $${ultimoCalculo3D.precio.toFixed(2)} MXN`);
+    }
+  </script>
+</body>
+</html>
